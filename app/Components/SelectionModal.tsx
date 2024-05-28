@@ -24,6 +24,7 @@ const SelectionModal = ({
   onClose,
   setCustom,
   custom,
+  setProcesses,
 }) => {
   const [textinput, settextinput] = useState("");
   const [lockti, setlockti] = useState(true);
@@ -36,6 +37,7 @@ const SelectionModal = ({
   const [dataObjectps, setDataObjectps] = useState(null);
   const [dataObjectrr, setDataObjectrr] = useState(null);
   const [dataObjectsrr, setDataObjectsrr] = useState(null);
+  const [showclose, setshowclose] = useState(false);
 
   const handleRadioButtonPress = () => {
     setCustom(!custom);
@@ -49,7 +51,7 @@ const SelectionModal = ({
     }
     const arr = [];
     for (let i = 1; i <= num; i++) {
-      arr.push({ id: i, arrivalTime: 0, burstTime: 5 });
+      arr.push({ id: i, arrivalTime: 0, burstTime: 0 });
     }
     setDataObject(arr);
   };
@@ -130,6 +132,28 @@ const SelectionModal = ({
     }
   };
 
+  const updateArrivalTime = (id, value) => {
+    const newDataObject = dataObject.map((item) => {
+      if (item.id === id) {
+        return { ...item, arrivalTime: parseInt(value) };
+      }
+      return item;
+    });
+    setDataObject(newDataObject);
+    setProcesses(newDataObject);
+  };
+
+  const updateBurstTime = (id, value) => {
+    const newDataObject = dataObject.map((item) => {
+      if (item.id === id) {
+        return { ...item, burstTime: parseInt(value) };
+      }
+      return item;
+    });
+    setDataObject(newDataObject);
+    setProcesses(newDataObject);
+  };
+
   const FCFSview = () => {
     return (
       <FlatList
@@ -167,7 +191,8 @@ const SelectionModal = ({
                     keyboardType="numeric"
                     style={{ height: height / 17, fontSize: width / 24 }}
                     maxLength={4}
-                    onChangeText={(val) => {}}
+                    value={item.arrivalTime}
+                    onChangeText={(val) => updateArrivalTime(item.id, val)}
                   />
                 </View>
                 <View
@@ -187,7 +212,8 @@ const SelectionModal = ({
                     keyboardType="numeric"
                     style={{ height: height / 17, fontSize: width / 24 }}
                     maxLength={4}
-                    onChangeText={(val) => {}}
+                    value={item.burstTime}
+                    onChangeText={(val) => updateBurstTime(item.id, val)}
                   />
                 </View>
               </View>
@@ -197,6 +223,10 @@ const SelectionModal = ({
       />
     );
   };
+
+  useEffect(() => {
+    console.log(dataObject);
+  }, [dataObject]);
 
   const PSview = () => {
     return (
@@ -313,7 +343,7 @@ const SelectionModal = ({
             <TextInput
               placeholder="Quantum"
               keyboardType="numeric"
-              editable={lockti}
+              editable={true}
               style={{ height: height / 17, fontSize: width / 24 }}
               maxLength={4}
               onChangeText={(val) => {}}
@@ -504,7 +534,6 @@ const SelectionModal = ({
             <TextInput
               placeholder="Quantum"
               keyboardType="numeric"
-              editable={lockti}
               style={{ height: height / 17, fontSize: width / 24 }}
               maxLength={4}
               onChangeText={(val) => {}}
@@ -623,6 +652,7 @@ const SelectionModal = ({
                 marginTop: width / 30,
               }}
             >
+              <Text style={{ fontSize: width / 24 }}>Processes:{"\t\t"}</Text>
               <View
                 style={{
                   width: width / 4.6,
@@ -670,6 +700,7 @@ const SelectionModal = ({
             >
               <Text style={styles.closeButtonText}>Done</Text>
             </TouchableOpacity>
+
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
               <Text style={styles.closeButtonText}>Close</Text>
             </TouchableOpacity>

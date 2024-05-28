@@ -5,42 +5,37 @@ import {
   ScrollView,
   Button,
   StyleSheet,
-  TextInput,
-  FlatList,
 } from "react-native";
 import SelectionModal from "../Components/SelectionModal";
 
 const Main = () => {
   const [visible, setVisible] = useState(false);
-  const [custom, setcustom] = useState(false);
+  const [custom, setCustom] = useState(false);
   const [algorithm, setAlgorithm] = useState("");
-  const handleValueChange = (value) => {
-    setAlgorithm(value);
-  };
+  const [processes, setProcesses] = useState([]);
+  const [ganttData, setGanttData] = useState([]);
 
   useEffect(() => {
     console.log("Algorithm changed to", algorithm);
     console.log("Custom parameter is", custom);
   }, [algorithm]);
+
+  const handleValueChange = (value) => {
+    setAlgorithm(value);
+  };
+
   const handleModalClose = () => {
     setVisible(false);
   };
-
-  const [processes, setProcesses] = useState([
-    { id: 1, arrivalTime: 0, burstTime: 5 },
-    { id: 2, arrivalTime: 1, burstTime: 3 },
-    { id: 3, arrivalTime: 2, burstTime: 8 },
-    { id: 4, arrivalTime: 3, burstTime: 6 },
-  ]);
-  const [ganttData, setGanttData] = useState([]);
 
   const calculateGanttData = () => {
     let currentTime = 0;
     let ganttChart = [];
 
-    processes.sort((a, b) => a.arrivalTime - b.arrivalTime);
+    // Sort processes by arrival time
+    const sortedProcesses = [...processes].sort((a, b) => a.arrivalTime - b.arrivalTime);
 
-    processes.forEach((process) => {
+    sortedProcesses.forEach((process) => {
       let startTime = Math.max(currentTime, process.arrivalTime);
       let endTime = startTime + process.burstTime;
       ganttChart.push({ ...process, startTime, endTime });
@@ -49,6 +44,10 @@ const Main = () => {
 
     setGanttData(ganttChart);
   };
+
+  useEffect(() => {
+    console.log("Gantt data changed to", processes);
+  }, [processes]);
 
   return (
     <View style={styles.container}>
@@ -80,10 +79,11 @@ const Main = () => {
         <SelectionModal
           visible={visible}
           value={algorithm}
-          setCustom={setcustom}
+          setCustom={setCustom}
           onValueChange={handleValueChange}
           onClose={handleModalClose}
           custom={custom}
+          setProcesses={setProcesses}
         />
         <Button title="Calculate Gantt Chart" onPress={calculateGanttData} />
       </View>
