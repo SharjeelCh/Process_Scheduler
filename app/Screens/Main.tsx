@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
   ScrollView,
   Button,
+  RefreshControl,
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
@@ -11,6 +12,7 @@ import SelectionModal from "../Components/SelectionModal";
 import { height, width } from "../Components/Dimensions";
 import { ActivityIndicator } from "react-native-paper";
 import * as font from "expo-font";
+import { StatusBar } from "expo-status-bar";
 
 const Main = () => {
   const [visible, setVisible] = useState(false);
@@ -21,7 +23,17 @@ const Main = () => {
   const [tableData, setTableData] = useState(null);
   const [timeQuantum, setTimeQuantum] = useState(0);
   const [show, setShow] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
+  const wait = (timeout) => {
+    return new Promise(resolve => setTimeout(resolve, timeout));
+  }
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    wait(2000).then(() => setRefreshing(false)); // simulate the delay of reloading data
+  }, []);
+  
   useEffect(() => {
     console.log("Algorithm changed to", algorithm);
     console.log("Custom parameter is", custom);
@@ -341,11 +353,41 @@ const Main = () => {
   }, [processes]);
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+    scrollEnabled={false}
+    contentContainerStyle={{justifyContent:'center',flex:1}}
+    refreshControl={
+      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+    }
+      style={styles.container}
+     
+    >
+      <StatusBar style="auto" backgroundColor="white"/>
       <Text style={styles.maintext}>Process Scheduler</Text>
+      <Text
+        style={{
+          fontSize: width / 26,
+          marginVertical: width / 40,
+          fontStyle: "italic",
+        }}
+      >
+        {algorithm}
+      </Text>
+      {ganttData.length > 0 && (
+        <Text
+          style={{
+            fontSize: width / 22,
+            fontWeight: "bold",
+            fontStyle: "italic",
+          }}
+        >
+          Gantt Chart
+        </Text>
+      )}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+       
         style={styles.ganttContainer}
       >
         {ganttData.map((process, index) => (
@@ -429,9 +471,9 @@ const Main = () => {
           flexDirection: "row",
           width: "100%",
           justifyContent: "space-evenly",
+          marginBottom: height / 50,
         }}
       >
-        <Text>{algorithm}</Text>
         <TouchableOpacity
           onPress={() => {
             setVisible(true);
@@ -465,15 +507,15 @@ const Main = () => {
           </TouchableOpacity>
         )}
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  maintext:{
+  maintext: {
     fontSize: width / 14.5,
     fontWeight: "bold",
-    fontFamily: 'Roboto',
+    fontFamily: "Roboto",
     marginTop: height / 40,
   },
   algoButton: {
@@ -487,12 +529,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    justifyContent: "center",
+
   },
   ganttContainer: {
     flexDirection: "row",
-    marginTop: 20,
-    padding: 10,
+    marginTop: width / 35,
+    height: height / 15,
   },
   process: {
     height: height / 13,
@@ -509,11 +551,12 @@ const styles = StyleSheet.create({
   tableContainer: {
     marginTop: 20,
     width: "100%",
+    height: height / 2.5,
+    marginBottom: height / 20,
   },
   tableHeader: {
     fontSize: 18,
     fontWeight: "bold",
-    textAlign: "center",
     marginBottom: 10,
   },
   table: {

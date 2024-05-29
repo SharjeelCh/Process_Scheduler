@@ -771,7 +771,7 @@ const SelectionModal = ({
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={true}>
+    <Modal visible={visible} animationType="fade" transparent={true}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalText}>Select an Algorithm</Text>
