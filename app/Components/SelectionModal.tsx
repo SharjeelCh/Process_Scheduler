@@ -13,8 +13,6 @@ import {
 } from "react-native";
 import { height, width } from "./Dimensions";
 import { Picker } from "@react-native-picker/picker";
-import RadioButtonRN from "radio-buttons-react-native";
-import Icon from "react-native-vector-icons/FontAwesome";
 import { RadioButton, Checkbox } from "react-native-paper";
 
 const SelectionModal = ({
@@ -25,6 +23,7 @@ const SelectionModal = ({
   setCustom,
   custom,
   setProcesses,
+  setProcessessjf,
 }) => {
   const [textinput, settextinput] = useState("");
   const [lockti, setlockti] = useState(true);
@@ -135,13 +134,14 @@ const SelectionModal = ({
   const updateArrivalTime = (id, value) => {
     const newDataObject = dataObject.map((item) => {
       if (item.id === id) {
-        return { ...item, arrivalTime: parseInt(value) };
+        return { ...item, arrivalTime: isNaN(value) ? item.arrivalTime : parseInt(value) };
       }
       return item;
     });
     setDataObject(newDataObject);
     setProcesses(newDataObject);
   };
+  
 
   const updateBurstTime = (id, value) => {
     const newDataObject = dataObject.map((item) => {
@@ -191,7 +191,7 @@ const SelectionModal = ({
                     keyboardType="numeric"
                     style={{ height: height / 17, fontSize: width / 24 }}
                     maxLength={4}
-                    value={item.arrivalTime}
+                    value={item.arrivalTime?.toString()}
                     onChangeText={(val) => updateArrivalTime(item.id, val)}
                   />
                 </View>
@@ -212,8 +212,9 @@ const SelectionModal = ({
                     keyboardType="numeric"
                     style={{ height: height / 17, fontSize: width / 24 }}
                     maxLength={4}
-                    value={item.burstTime}
+                    value={item.burstTime?.toString()}
                     onChangeText={(val) => updateBurstTime(item.id, val)}
+                    
                   />
                 </View>
               </View>
@@ -439,6 +440,29 @@ const SelectionModal = ({
     );
   };
 
+  const updateArrivalTimesjf = (id, value) => {
+    const newDataObject = dataObject.map((item) => {
+      if (item.id === id) {
+        return { ...item, arrivalTime: isNaN(value) ? item.arrivalTime : parseInt(value) };
+      }
+      return item;
+    });
+    setDataObject(newDataObject);
+    setProcessessjf(newDataObject);
+  };
+  
+
+  const updateBurstTimesjf = (id, value) => {
+    const newDataObject = dataObject.map((item) => {
+      if (item.id === id) {
+        return { ...item, burstTime: parseInt(value) };
+      }
+      return item;
+    });
+    setDataObject(newDataObject);
+    setProcessessjf(newDataObject);
+  };
+
   const SJFview = () => {
     return (
       <FlatList
@@ -476,7 +500,8 @@ const SelectionModal = ({
                     keyboardType="numeric"
                     style={{ height: height / 17, fontSize: width / 24 }}
                     maxLength={4}
-                    onChangeText={(val) => {}}
+                    value={item.arrivalTime?.toString()}
+                    onChangeText={(val) => updateArrivalTimesjf(item.id, val)}
                   />
                 </View>
                 <View
@@ -496,7 +521,8 @@ const SelectionModal = ({
                     keyboardType="numeric"
                     style={{ height: height / 17, fontSize: width / 24 }}
                     maxLength={4}
-                    onChangeText={(val) => {}}
+                    value={item.burstTime?.toString()}
+                    onChangeText={(val) => {updateBurstTimesjf(item.id, val)}}
                   />
                 </View>
               </View>
