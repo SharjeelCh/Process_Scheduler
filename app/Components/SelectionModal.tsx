@@ -24,6 +24,10 @@ const SelectionModal = ({
   custom,
   setProcesses,
   setProcessessjf,
+  setProcessessps,
+  setProcessesssrr,
+  settimequantumssrr,
+  setProcessessrr,
 }) => {
   const [textinput, settextinput] = useState("");
   const [lockti, setlockti] = useState(true);
@@ -37,6 +41,7 @@ const SelectionModal = ({
   const [dataObjectrr, setDataObjectrr] = useState(null);
   const [dataObjectsrr, setDataObjectsrr] = useState(null);
   const [showclose, setshowclose] = useState(false);
+  const [timeQuantum, setTimeQuantum] = useState(0);
 
   const handleRadioButtonPress = () => {
     setCustom(!custom);
@@ -50,7 +55,7 @@ const SelectionModal = ({
     }
     const arr = [];
     for (let i = 1; i <= num; i++) {
-      arr.push({ id: i, arrivalTime: 0, burstTime: 0 });
+      arr.push({ id: i, arrivalTime: "", burstTime: "" });
     }
     setDataObject(arr);
   };
@@ -63,7 +68,7 @@ const SelectionModal = ({
     }
     const arr = [];
     for (let i = 1; i <= num; i++) {
-      arr.push({ id: i, arrivalTime: 0, burstTime: 5, priority: 1 });
+      arr.push({ id: i, arrivalTime: "", burstTime: "", priority: "" });
     }
     setDataObjectps(arr);
   };
@@ -76,7 +81,7 @@ const SelectionModal = ({
     }
     const arr = [];
     for (let i = 1; i <= num; i++) {
-      arr.push({ id: i, arrivalTime: 0, burstTime: 5, tq: 2, priority: 1 });
+      arr.push({ id: i, arrivalTime: '', burstTime: '', tq: '', priority: '' });
     }
     setDataObjectrr(arr);
   };
@@ -89,7 +94,7 @@ const SelectionModal = ({
     }
     const arr = [];
     for (let i = 1; i <= num; i++) {
-      arr.push({ id: i, arrivalTime: 0, burstTime: 5, tq: 2 });
+      arr.push({ id: i, arrivalTime: "", burstTime: "", tq: "" });
     }
     setDataObjectsrr(arr);
   };
@@ -134,14 +139,16 @@ const SelectionModal = ({
   const updateArrivalTime = (id, value) => {
     const newDataObject = dataObject.map((item) => {
       if (item.id === id) {
-        return { ...item, arrivalTime: isNaN(value) ? item.arrivalTime : parseInt(value) };
+        return {
+          ...item,
+          arrivalTime: isNaN(value) ? item.arrivalTime : parseInt(value),
+        };
       }
       return item;
     });
     setDataObject(newDataObject);
     setProcesses(newDataObject);
   };
-  
 
   const updateBurstTime = (id, value) => {
     const newDataObject = dataObject.map((item) => {
@@ -214,7 +221,6 @@ const SelectionModal = ({
                     maxLength={4}
                     value={item.burstTime?.toString()}
                     onChangeText={(val) => updateBurstTime(item.id, val)}
-                    
                   />
                 </View>
               </View>
@@ -228,6 +234,41 @@ const SelectionModal = ({
   useEffect(() => {
     console.log(dataObject);
   }, [dataObject]);
+
+  const updateArrivalTimeps = (id, value) => {
+    const newDataObject = dataObjectps.map((item) => {
+      if (item.id === id) {
+        return {
+          ...item,
+          arrivalTime: isNaN(value) ? item.arrivalTime : parseInt(value),
+        };
+      }
+      return item;
+    });
+    setDataObjectps(newDataObject);
+    setProcessessps(newDataObject);
+  };
+
+  const updateBurstTimeps = (id, value) => {
+    const newDataObject = dataObjectps.map((item) => {
+      if (item.id === id) {
+        return { ...item, burstTime: parseInt(value) };
+      }
+      return item;
+    });
+    setDataObjectps(newDataObject);
+    setProcessessps(newDataObject);
+  };
+  const updatePriotityps = (id, value) => {
+    const newDataObject = dataObjectps.map((item) => {
+      if (item.id === id) {
+        return { ...item, priority: parseInt(value) };
+      }
+      return item;
+    });
+    setDataObjectps(newDataObject);
+    setProcessessps(newDataObject);
+  };
 
   const PSview = () => {
     return (
@@ -266,7 +307,8 @@ const SelectionModal = ({
                     keyboardType="numeric"
                     style={{ height: height / 17, fontSize: width / 24 }}
                     maxLength={4}
-                    onChangeText={(val) => {}}
+                    value={item.arrivalTime?.toString()}
+                    onChangeText={(val) => updateArrivalTimeps(item.id, val)}
                   />
                 </View>
                 <View
@@ -286,7 +328,8 @@ const SelectionModal = ({
                     keyboardType="numeric"
                     style={{ height: height / 17, fontSize: width / 24 }}
                     maxLength={4}
-                    onChangeText={(val) => {}}
+                    value={item.burstTime?.toString()}
+                    onChangeText={(val) => updateBurstTimeps(item.id, val)}
                   />
                 </View>
                 <View
@@ -306,7 +349,8 @@ const SelectionModal = ({
                     keyboardType="numeric"
                     style={{ height: height / 17, fontSize: width / 24 }}
                     maxLength={4}
-                    onChangeText={(val) => {}}
+                    value={item.priority?.toString()}
+                    onChangeText={(val) => updatePriotityps(item.id, val)}
                   />
                 </View>
               </View>
@@ -315,6 +359,41 @@ const SelectionModal = ({
         }}
       />
     );
+  };
+
+  const updateArrivalTimerr = (id, value) => {
+    const newDataObject = dataObjectrr.map((item) => {
+      if (item.id === id) {
+        return {
+          ...item,
+          arrivalTime: isNaN(value) ? item.arrivalTime : parseInt(value),
+        };
+      }
+      return item;
+    });
+    setDataObjectrr(newDataObject);
+    setProcessessrr(newDataObject);
+  };
+
+  const updateBurstTimerr = (id, value) => {
+    const newDataObject = dataObjectrr.map((item) => {
+      if (item.id === id) {
+        return { ...item, burstTime: parseInt(value) };
+      }
+      return item;
+    });
+    setDataObjectrr(newDataObject);
+    setProcessessrr(newDataObject);
+  };
+  const updatePriotityrr = (id, value) => {
+    const newDataObject = dataObjectrr.map((item) => {
+      if (item.id === id) {
+        return { ...item, priority: parseInt(value) };
+      }
+      return item;
+    });
+    setDataObjectrr(newDataObject);
+    setProcessessrr(newDataObject);
   };
 
   const RRview = () => {
@@ -347,7 +426,16 @@ const SelectionModal = ({
               editable={true}
               style={{ height: height / 17, fontSize: width / 24 }}
               maxLength={4}
-              onChangeText={(val) => {}}
+              value={timeQuantum?.toString()}
+              onChangeText={(val) => {
+                setTimeQuantum(val);
+                settimequantumssrr(parseInt(val));
+                const newDataObject = dataObjectrr.map((item) => {
+                  return { ...item, tq: parseInt(val) };
+                });
+                setDataObjectsrr(newDataObject);
+                setProcessesssrr(newDataObject);
+              }}
             />
           </View>
         </View>
@@ -388,7 +476,8 @@ const SelectionModal = ({
                       keyboardType="numeric"
                       style={{ height: height / 17, fontSize: width / 24 }}
                       maxLength={4}
-                      onChangeText={(val) => {}}
+                      value={item.arrivalTime?.toString()}
+                    onChangeText={(val) => updateArrivalTimerr(item.id, val)}
                     />
                   </View>
                   <View
@@ -408,7 +497,8 @@ const SelectionModal = ({
                       keyboardType="numeric"
                       style={{ height: height / 17, fontSize: width / 24 }}
                       maxLength={4}
-                      onChangeText={(val) => {}}
+                      value={item.burstTime?.toString()}
+                    onChangeText={(val) => updateBurstTimerr(item.id, val)}
                     />
                   </View>
                   <View
@@ -428,7 +518,8 @@ const SelectionModal = ({
                       keyboardType="numeric"
                       style={{ height: height / 17, fontSize: width / 24 }}
                       maxLength={4}
-                      onChangeText={(val) => {}}
+                      value={item.priority?.toString()}
+                    onChangeText={(val) => updatePriotityrr(item.id, val)}
                     />
                   </View>
                 </View>
@@ -443,14 +534,16 @@ const SelectionModal = ({
   const updateArrivalTimesjf = (id, value) => {
     const newDataObject = dataObject.map((item) => {
       if (item.id === id) {
-        return { ...item, arrivalTime: isNaN(value) ? item.arrivalTime : parseInt(value) };
+        return {
+          ...item,
+          arrivalTime: isNaN(value) ? item.arrivalTime : parseInt(value),
+        };
       }
       return item;
     });
     setDataObject(newDataObject);
     setProcessessjf(newDataObject);
   };
-  
 
   const updateBurstTimesjf = (id, value) => {
     const newDataObject = dataObject.map((item) => {
@@ -522,7 +615,9 @@ const SelectionModal = ({
                     style={{ height: height / 17, fontSize: width / 24 }}
                     maxLength={4}
                     value={item.burstTime?.toString()}
-                    onChangeText={(val) => {updateBurstTimesjf(item.id, val)}}
+                    onChangeText={(val) => {
+                      updateBurstTimesjf(item.id, val);
+                    }}
                   />
                 </View>
               </View>
@@ -531,6 +626,31 @@ const SelectionModal = ({
         }}
       />
     );
+  };
+
+  const updateArrivalTimessrr = (id, value) => {
+    const newDataObject = dataObjectsrr.map((item) => {
+      if (item.id === id) {
+        return {
+          ...item,
+          arrivalTime: isNaN(value) ? item.arrivalTime : parseInt(value),
+        };
+      }
+      return item;
+    });
+    setDataObjectsrr(newDataObject);
+    setProcessesssrr(newDataObject);
+  };
+
+  const updateBurstTimessrr = (id, value) => {
+    const newDataObject = dataObjectsrr.map((item) => {
+      if (item.id === id) {
+        return { ...item, burstTime: parseInt(value) };
+      }
+      return item;
+    });
+    setDataObjectsrr(newDataObject);
+    setProcessesssrr(newDataObject);
   };
 
   const SRRview = () => {
@@ -562,7 +682,16 @@ const SelectionModal = ({
               keyboardType="numeric"
               style={{ height: height / 17, fontSize: width / 24 }}
               maxLength={4}
-              onChangeText={(val) => {}}
+              value={timeQuantum?.toString()}
+              onChangeText={(val) => {
+                setTimeQuantum(val);
+                settimequantumssrr(parseInt(val));
+                const newDataObject = dataObjectsrr.map((item) => {
+                  return { ...item, tq: parseInt(val) };
+                });
+                setDataObjectsrr(newDataObject);
+                setProcessesssrr(newDataObject);
+              }}
             />
           </View>
         </View>
@@ -603,7 +732,10 @@ const SelectionModal = ({
                       keyboardType="numeric"
                       style={{ height: height / 17, fontSize: width / 24 }}
                       maxLength={4}
-                      onChangeText={(val) => {}}
+                      value={item.arrivalTime?.toString()}
+                      onChangeText={(val) => {
+                        updateArrivalTimessrr(item.id, val);
+                      }}
                     />
                   </View>
                   <View
@@ -623,7 +755,10 @@ const SelectionModal = ({
                       keyboardType="numeric"
                       style={{ height: height / 17, fontSize: width / 24 }}
                       maxLength={4}
-                      onChangeText={(val) => {}}
+                      value={item.burstTime?.toString()}
+                      onChangeText={(val) => {
+                        updateBurstTimessrr(item.id, val);
+                      }}
                     />
                   </View>
                 </View>

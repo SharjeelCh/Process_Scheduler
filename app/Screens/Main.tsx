@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, Button, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  Button,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import SelectionModal from "../Components/SelectionModal";
 import { height, width } from "../Components/Dimensions";
+import { ActivityIndicator } from "react-native-paper";
+import * as font from "expo-font";
 
 const Main = () => {
   const [visible, setVisible] = useState(false);
@@ -10,10 +19,13 @@ const Main = () => {
   const [processes, setProcesses] = useState([]);
   const [ganttData, setGanttData] = useState([]);
   const [tableData, setTableData] = useState(null);
+  const [timeQuantum, setTimeQuantum] = useState(0);
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
     console.log("Algorithm changed to", algorithm);
     console.log("Custom parameter is", custom);
+    console.log("time quantum is", timeQuantum);
   }, [algorithm]);
 
   const handleValueChange = (value) => {
@@ -27,8 +39,10 @@ const Main = () => {
   const calculateWaitingTime = (processes, ganttChart) => {
     let waitingTimes = {};
     processes.forEach((process) => {
-      let processExecution = ganttChart.find((entry) => entry.id === process.id);
-      waitingTimes[process.id] = processExecution.startTime - process.arrivalTime;
+      let startTime = ganttChart.find(
+        (entry) => entry.id === process.id
+      ).startTime;
+      waitingTimes[process.id] = startTime - process.arrivalTime;
     });
     return waitingTimes;
   };
@@ -36,8 +50,10 @@ const Main = () => {
   const calculateTurnaroundTime = (processes, ganttChart) => {
     let turnaroundTimes = {};
     processes.forEach((process) => {
-      let processExecution = ganttChart.find((entry) => entry.id === process.id);
-      turnaroundTimes[process.id] = processExecution.endTime - process.arrivalTime;
+      let endTime = ganttChart
+        .filter((entry) => entry.id === process.id)
+        .pop().endTime;
+      turnaroundTimes[process.id] = endTime - process.arrivalTime;
     });
     return turnaroundTimes;
   };
@@ -45,21 +61,32 @@ const Main = () => {
   const calculateResponseTime = (processes, ganttChart) => {
     let responseTimes = {};
     processes.forEach((process) => {
-      let processExecution = ganttChart.find((entry) => entry.id === process.id);
-      responseTimes[process.id] = processExecution.startTime - process.arrivalTime;
+      let startTime = ganttChart.find(
+        (entry) => entry.id === process.id
+      ).startTime;
+      responseTimes[process.id] = startTime - process.arrivalTime;
     });
     return responseTimes;
   };
 
-  const fcfsAlgorithm = (processes) => {
+  const deepCopyProcesses = (processes) => {
+    return processes.map((process) => ({ ...process }));
+  };
+
+  const fcfsAlgorithm = (originalProcesses) => {
     let currentTime = 0;
     let ganttChart = [];
+    let processes = deepCopyProcesses(originalProcesses);
 
-    const sortedProcesses = [...processes].sort((a, b) => a.arrivalTime - b.arrivalTime);
+    processes.sort((a, b) => a.arrivalTime - b.arrivalTime);
 
-    sortedProcesses.forEach((process) => {
+    processes.forEach((process) => {
       if (currentTime < process.arrivalTime) {
-        ganttChart.push({ id: "wait", startTime: currentTime, endTime: process.arrivalTime });
+        ganttChart.push({
+          id: "wait",
+          startTime: currentTime,
+          endTime: process.arrivalTime,
+        });
         currentTime = process.arrivalTime;
       }
 
@@ -72,15 +99,15 @@ const Main = () => {
     return ganttChart;
   };
 
-  const sjfAlgorithm = (processes) => {
+  const sjfAlgorithm = (originalProcesses) => {
     let currentTime = 0;
     let ganttChart = [];
-    let remainingProcesses = [...processes];
+    let processes = deepCopyProcesses(originalProcesses);
 
-    remainingProcesses.sort((a, b) => a.burstTime - b.burstTime);
+    processes.sort((a, b) => a.burstTime - b.burstTime);
 
-    while (remainingProcesses.length > 0) {
-      let process = remainingProcesses.shift();
+    while (processes.length > 0) {
+      let process = processes.shift();
 
       let startTime = currentTime;
       let endTime = startTime + process.burstTime;
@@ -91,38 +118,222 @@ const Main = () => {
     return ganttChart;
   };
 
-  const calculateGanttData = () => {
+  const priorityAlgorithm = (originalProcesses) => {
+    let currentTime = 0;
     let ganttChart = [];
+    let processQueue = [];
+    let processes = deepCopyProcesses(originalProcesses);
 
-    if (algorithm === "First Come First Serve") {
-      ganttChart = fcfsAlgorithm(processes);
-    } else if (algorithm === "Shortest Job First (SJF)") {
-      ganttChart = sjfAlgorithm(processes);
+    processes.sort((a, b) => a.arrivalTime - b.arrivalTime);
+
+    while (processes.length > 0 || processQueue.length > 0) {
+      while (processes.length > 0 && processes[0].arrivalTime <= currentTime) {
+        processQueue.push(processes.shift());
+      }
+
+      processQueue.sort((a, b) => a.priority - b.priority);
+
+      if (processQueue.length > 0) {
+        let currentProcess = processQueue.shift();
+
+        let nextArrivalTime =
+          processes.length > 0 ? processes[0].arrivalTime : Number.MAX_VALUE;
+        let runTime = Math.min(
+          currentProcess.burstTime,
+          nextArrivalTime - currentTime
+        );
+
+        ganttChart.push({
+          id: currentProcess.id,
+          startTime: currentTime,
+          endTime: currentTime + runTime,
+        });
+
+        currentProcess.burstTime -= runTime;
+        currentTime += runTime;
+
+        if (currentProcess.burstTime > 0) {
+          processQueue.push(currentProcess);
+        }
+      } else {
+        ganttChart.push({
+          id: "wait",
+          startTime: currentTime,
+          endTime: processes[0].arrivalTime,
+        });
+        currentTime = processes[0].arrivalTime;
+      }
     }
 
-    setGanttData(ganttChart);
+    return ganttChart;
+  };
 
-    const waitingTimes = calculateWaitingTime(processes, ganttChart);
-    const turnaroundTimes = calculateTurnaroundTime(processes, ganttChart);
-    const responseTimes = calculateResponseTime(processes, ganttChart);
-    const totalWaitingTime = Object.values(waitingTimes).reduce((acc, time) => acc + time, 0);
-    const avgWaitingTime = totalWaitingTime / processes.length;
-    const totalTurnaroundTime = Object.values(turnaroundTimes).reduce((acc, time) => acc + time, 0)/processes.length
+  const roundRobinAlgorithm = (originalProcesses, timeQuantum) => {
+    let currentTime = 0;
+    let ganttChart = [];
+    let processQueue = [];
+    let processes = deepCopyProcesses(originalProcesses);
 
-    const tableData = processes.map((process) => ({
-      id: process.id,
-      arrivalTime: process.arrivalTime,
-      burstTime: process.burstTime,
-      waitingTime: waitingTimes[process.id],
-      turnaroundTime: turnaroundTimes[process.id],
-      responseTime: responseTimes[process.id],
-    }));
+    processes.sort((a, b) => a.arrivalTime - b.arrivalTime);
 
-    setTableData({
-      processes: tableData,
-      avgWaitingTime,
-      totalTurnaroundTime,
-    });
+    while (processes.length > 0 || processQueue.length > 0) {
+      while (processes.length > 0 && processes[0].arrivalTime <= currentTime) {
+        processQueue.push(processes.shift());
+      }
+
+      if (processQueue.length > 0) {
+        let currentProcess = processQueue.shift();
+
+        let runTime = Math.min(currentProcess.burstTime, timeQuantum);
+        ganttChart.push({
+          id: currentProcess.id,
+          startTime: currentTime,
+          endTime: currentTime + runTime,
+        });
+
+        currentProcess.burstTime -= runTime;
+        currentTime += runTime;
+
+        while (
+          processes.length > 0 &&
+          processes[0].arrivalTime <= currentTime
+        ) {
+          processQueue.push(processes.shift());
+        }
+
+        if (currentProcess.burstTime > 0) {
+          processQueue.push(currentProcess);
+        }
+      } else {
+        let nextArrivalTime =
+          processes.length > 0 ? processes[0].arrivalTime : currentTime;
+        ganttChart.push({
+          id: "wait",
+          startTime: currentTime,
+          endTime: nextArrivalTime,
+        });
+        currentTime = nextArrivalTime;
+      }
+    }
+
+    return ganttChart;
+  };
+  const roundRobinWithPriorityAlgorithm = (originalProcesses, timeQuantum) => {
+    let currentTime = 0;
+    let ganttChart = [];
+    let processQueue = [];
+    let processes = deepCopyProcesses(originalProcesses);
+
+    processes.sort((a, b) => a.arrivalTime - b.arrivalTime);
+
+    while (processes.length > 0 || processQueue.length > 0) {
+      while (processes.length > 0 && processes[0].arrivalTime <= currentTime) {
+        processQueue.push(processes.shift());
+      }
+
+      processQueue.sort((a, b) => {
+        if (a.priority === b.priority) {
+          return a.arrivalTime - b.arrivalTime;
+        }
+        return a.priority - b.priority;
+      });
+
+      if (processQueue.length > 0) {
+        let currentProcess = processQueue.shift();
+
+        let runTime = Math.min(currentProcess.burstTime, timeQuantum);
+        ganttChart.push({
+          id: currentProcess.id,
+          startTime: currentTime,
+          endTime: currentTime + runTime,
+        });
+
+        currentProcess.burstTime -= runTime;
+        currentTime += runTime;
+
+        while (
+          processes.length > 0 &&
+          processes[0].arrivalTime <= currentTime
+        ) {
+          processQueue.push(processes.shift());
+        }
+
+        if (currentProcess.burstTime > 0) {
+          processQueue.push(currentProcess);
+        }
+      } else {
+        let nextArrivalTime =
+          processes.length > 0 ? processes[0].arrivalTime : currentTime;
+        ganttChart.push({
+          id: "wait",
+          startTime: currentTime,
+          endTime: nextArrivalTime,
+        });
+        currentTime = nextArrivalTime;
+      }
+    }
+
+    return ganttChart;
+  };
+
+  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const calculateGanttData = async () => {
+    setShow(true);
+
+    console.log(processes);
+    let ganttChart = [];
+
+    if (algorithm !== "") {
+      await delay(1200);
+
+      if (algorithm === "First Come First Serve") {
+        ganttChart = fcfsAlgorithm(processes);
+      } else if (algorithm === "Shortest Job First (SJF)") {
+        ganttChart = sjfAlgorithm(processes);
+      } else if (algorithm === "Priority Scheduling") {
+        ganttChart = priorityAlgorithm(processes);
+      } else if (algorithm === "Round Robin") {
+        ganttChart = roundRobinAlgorithm(processes, timeQuantum);
+      } else if (algorithm === "Round Robin with Priority") {
+        ganttChart = roundRobinWithPriorityAlgorithm(processes, timeQuantum);
+      }
+
+      setGanttData(ganttChart);
+
+      const waitingTimes = calculateWaitingTime(processes, ganttChart);
+      const turnaroundTimes = calculateTurnaroundTime(processes, ganttChart);
+      const responseTimes = calculateResponseTime(processes, ganttChart);
+      const totalWaitingTime = Object.values(waitingTimes).reduce(
+        (acc, time) => acc + time,
+        0
+      );
+      const avgWaitingTime = totalWaitingTime / processes.length;
+      const totalTurnaroundTime =
+        Object.values(turnaroundTimes).reduce((acc, time) => acc + time, 0) /
+        processes.length;
+
+      const tableData = processes.map((process) => ({
+        id: process.id,
+        arrivalTime: process.arrivalTime,
+        burstTime: process.burstTime,
+        waitingTime: waitingTimes[process.id],
+        turnaroundTime: turnaroundTimes[process.id],
+        responseTime: responseTimes[process.id],
+      }));
+
+      setTableData({
+        processes: tableData,
+        avgWaitingTime,
+        totalTurnaroundTime,
+      });
+
+      setShow(false);
+    } else {
+      await delay(1200);
+      alert("Please select an algorithm");
+      setShow(false);
+    }
   };
 
   useEffect(() => {
@@ -131,33 +342,34 @@ const Main = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView horizontal style={styles.ganttContainer}>
+      <Text style={styles.maintext}>Process Scheduler</Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.ganttContainer}
+      >
         {ganttData.map((process, index) => (
-          <View>
-          <View
-            key={index}
-            style={{
-              ...styles.process,
-              width: (process.endTime - process.startTime) * 20, // Adjust scale as needed
-              backgroundColor: process.id === "wait" ? "#ccc" : `hsl(${process.id * 50}, 70%, 50%)`,
-            }}
-          >
-            <Text style={styles.processText}>
-              {process.id === "wait" ? `Wait (${process.startTime}-${process.endTime})` : `P${process.id} (${process.startTime}-${process.endTime})`}
-            </Text>
-          </View>
+          <View key={index}>
+            <View
+              style={{
+                ...styles.process,
+                width: (process.endTime - process.startTime) * 35, // Adjust scale as needed
+                backgroundColor:
+                  process.id === "wait"
+                    ? "#ccc"
+                    : `hsl(${process.id * 50}, 63%, 46%)`,
+              }}
+            >
+              <Text style={styles.processText}>
+                {process.id === "wait"
+                  ? `Wait (${process.startTime}-${process.endTime})`
+                  : `P${process.id} (${process.startTime}-${process.endTime})`}
+              </Text>
+            </View>
           </View>
         ))}
       </ScrollView>
-
       <View>
-        <Text>{algorithm}</Text>
-        <Button
-          title="Select an Algorithm"
-          onPress={() => {
-            setVisible(true);
-          }}
-        />
         <SelectionModal
           visible={visible}
           value={algorithm}
@@ -167,8 +379,11 @@ const Main = () => {
           custom={custom}
           setProcesses={setProcesses}
           setProcessessjf={setProcesses}
+          setProcessessps={setProcesses}
+          setProcessesssrr={setProcesses}
+          settimequantumssrr={setTimeQuantum}
+          setProcessessrr={setProcesses}
         />
-        <Button title="Calculate Gantt Chart" onPress={calculateGanttData} />
       </View>
 
       {tableData && (
@@ -195,25 +410,84 @@ const Main = () => {
             ))}
             <View style={styles.tableRow}>
               <Text style={styles.tableCell}>Average Waiting Time:</Text>
-              <Text style={styles.tableCell}>{tableData.avgWaitingTime.toFixed(2)}</Text>
+              <Text style={styles.tableCell}>
+                {tableData.avgWaitingTime.toFixed(2)}
+              </Text>
             </View>
             <View style={styles.tableRow}>
               <Text style={styles.tableCell}>Avg Turnaround Time:</Text>
-              <Text style={styles.tableCell}>{tableData.totalTurnaroundTime}</Text>
+              <Text style={styles.tableCell}>
+                {tableData.totalTurnaroundTime}
+              </Text>
             </View>
           </View>
         </ScrollView>
       )}
+
+      <View
+        style={{
+          flexDirection: "row",
+          width: "100%",
+          justifyContent: "space-evenly",
+        }}
+      >
+        <Text>{algorithm}</Text>
+        <TouchableOpacity
+          onPress={() => {
+            setVisible(true);
+          }}
+          style={styles.algoButton}
+        >
+          <Text style={{ color: "white", fontSize: width / 23 }}>
+            Select Algorithm
+          </Text>
+        </TouchableOpacity>
+        {show ? (
+          <ActivityIndicator
+            animating={show}
+            color="red"
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              width: width / 2.7,
+              borderRadius: width / 40,
+              height: height / 16,
+            }}
+          />
+        ) : (
+          <TouchableOpacity
+            style={styles.algoButton}
+            onPress={calculateGanttData}
+          >
+            <Text style={{ color: "white", fontSize: width / 23 }}>
+              Calculate
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  maintext:{
+    fontSize: width / 14.5,
+    fontWeight: "bold",
+    fontFamily: 'Roboto',
+    marginTop: height / 40,
+  },
+  algoButton: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "green",
+    width: width / 2.7,
+    borderRadius: width / 40,
+    height: height / 16,
+  },
   container: {
     flex: 1,
     padding: 20,
     justifyContent: "center",
-    alignItems: "center",
   },
   ganttContainer: {
     flexDirection: "row",
@@ -221,15 +495,16 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   process: {
-    height: height/13,
+    height: height / 13,
     justifyContent: "center",
     alignItems: "center",
     margin: 0,
-    borderWidth:1.5,
-    borderColor:'grey',
+    borderWidth: 1.3,
+    borderColor: "rgba(0,0,0,0.25)",
   },
   processText: {
-    color: "#fff",
+    color: "white",
+    fontWeight: "500",
   },
   tableContainer: {
     marginTop: 20,
