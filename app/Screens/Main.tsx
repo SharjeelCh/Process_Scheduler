@@ -14,14 +14,15 @@ import { height, width } from "../Components/Dimensions";
 import { ActivityIndicator } from "react-native-paper";
 import * as mediaLibrary from "expo-media-library";
 
-import * as Print from 'expo-print';
-import * as Sharing from 'expo-sharing';
+import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
 
 import { StatusBar } from "expo-status-bar";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { captureRef } from "react-native-view-shot";
 import DownloadModal from "../Components/DownloadModal";
 import Alert from "../Components/Alert";
+import { Line, Svg } from "react-native-svg";
 
 const Main = () => {
   const [visible, setVisible] = useState(false);
@@ -31,43 +32,39 @@ const Main = () => {
   const [ganttData, setGanttData] = useState([]);
   const [tableData, setTableData] = useState(null);
   const [timeQuantum, setTimeQuantum] = useState(0);
-  const [showdownloadModal,setshowdownloadModal]=useState(false)
-  const [showAlert,setshowAlert]=useState(false)
+  const [showdownloadModal, setshowdownloadModal] = useState(false);
+  const [showAlert, setshowAlert] = useState(false);
 
   const [show, setShow] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const viewRef = useRef(null);
-  const viewRef2=useRef(null);
-
+  const viewRef2 = useRef(null);
 
   const captureView = async () => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       const uri = await captureRef(viewRef, {
-        format:'jpg',
-        quality:1,
+        format: "jpg",
+        quality: 1,
       });
-      console.log('Image saved to', uri);
-  
+      console.log("Image saved to", uri);
+
       const asset = await mediaLibrary.createAssetAsync(uri);
       await mediaLibrary.saveToLibraryAsync(asset.uri);
 
       setshowdownloadModal(true);
-  
+
       return uri;
     } catch (error) {
-      console.error('Error capturing view:', error);
+      console.error("Error capturing view:", error);
     }
   };
 
-
   const handleGeneratePDF = async () => {
-    await captureView()
+    await captureView();
   };
 
-
-  
   const wait = (timeout) => {
     return new Promise((resolve) => setTimeout(resolve, timeout));
   };
@@ -174,7 +171,7 @@ const Main = () => {
     return ganttChart;
   };
 
-  const srtfAlgorithm =(originalProcesses) => {
+  const srtfAlgorithm = (originalProcesses) => {
     let currentTime = 0;
     let ganttChart = [];
     let processQueue = [];
@@ -222,7 +219,7 @@ const Main = () => {
     }
 
     return ganttChart;
-  }
+  };
 
   const priorityAlgorithm = (originalProcesses) => {
     let currentTime = 0;
@@ -403,7 +400,7 @@ const Main = () => {
         ganttChart = roundRobinAlgorithm(processes, timeQuantum);
       } else if (algorithm === "Round Robin with Priority") {
         ganttChart = roundRobinWithPriorityAlgorithm(processes, timeQuantum);
-      }  else if (algorithm === "Shortest Remaining Time First") {
+      } else if (algorithm === "Shortest Remaining Time First") {
         ganttChart = srtfAlgorithm(processes);
       }
 
@@ -448,6 +445,25 @@ const Main = () => {
     console.log("Gantt data changed to", processes);
   }, [processes]);
 
+  const DiagonalLines = ({ width, height }) => {
+    const numberOfLines = Math.ceil(width);
+    const lines = [];
+  
+    for (let i = 0; i < numberOfLines; i++) {
+      const x1 = (i + 1) * 10;
+      const y1 = 0;
+      const x2 = 0;
+      const y2 = (i + 1) * 10;
+      lines.push(<Line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="black" strokeWidth="0.46"/>);
+    }
+  
+    return (
+      <Svg height={height} width={width} viewBox={`0 0 ${width} ${height}`} style={styles.overlay}>
+        {lines}
+      </Svg>
+    );
+  };
+
   return (
     <ScrollView
       ref={viewRef}
@@ -458,7 +474,7 @@ const Main = () => {
       }
       style={styles.container}
     >
-      <StatusBar style="auto" backgroundColor='white' />
+      <StatusBar style="auto" backgroundColor="white" />
       <Text style={styles.maintext}>Process Scheduler</Text>
       <Text
         style={{
@@ -481,42 +497,44 @@ const Main = () => {
         </Text>
       )}
       <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.ganttContainer}
-        ref={viewRef2}
-      >
-        {ganttData.map((process, index) => (
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.ganttContainer}
+      ref={viewRef2}
+    >
+      {ganttData.map((process, index) => {
+        const width = (process.endTime - process.startTime) * 33; // Adjust scale as needed
+        return (
           <View key={index}>
             <View
               style={{
                 ...styles.process,
-                width: (process.endTime - process.startTime) * 33, // Adjust scale as needed
+                width: width,
                 backgroundColor:
-                  process.id === "wait"
-                    ? "#ccc"
+                  process.id === 'wait'
+                    ? '#ccc'
                     : `hsl(${process.id * 50}, 63%, 46%)`,
               }}
             >
+              {process.id === 'wait' && <DiagonalLines width={width} height={height/14} />}
               <Text style={styles.processText}>
-                {process.id === "wait" ? `Wait` : `P${process.id}`}
+                {process.id === 'wait' ? 'Wait' : `P${process.id}`}
               </Text>
             </View>
             <View
               style={{
                 ...styles.processtime,
-                width: (process.endTime - process.startTime) * 33, // Adjust scale as needed
+                width: width,
               }}
             >
               <Text style={styles.processText2}>
-                {process.id === "wait"
-                  ? `${process.startTime}-${process.endTime}`
-                  : `${process.startTime}-${process.endTime}`}
+                {`${process.startTime}-${process.endTime}`}
               </Text>
             </View>
           </View>
-        ))}
-      </ScrollView>
+        );
+      })}
+    </ScrollView>
       <View>
         <SelectionModal
           visible={visible}
@@ -642,17 +660,17 @@ const Main = () => {
           </TouchableOpacity>
         )}
         <DownloadModal
-      showmodal={showdownloadModal}
-      setshowmodal={setshowdownloadModal}
-      closemodal={false}
-      text={'Image Saved to Gallery'}
-      />
-      <Alert
-      showmodal={showAlert}
-      setshowmodal={setshowAlert}
-      closemodal={false}
-      text={'No Algorithm Selected!'}
-      />
+          showmodal={showdownloadModal}
+          setshowmodal={setshowdownloadModal}
+          closemodal={false}
+          text={"Image Saved to Gallery"}
+        />
+        <Alert
+          showmodal={showAlert}
+          setshowmodal={setshowAlert}
+          closemodal={false}
+          text={"No Algorithm Selected!"}
+        />
       </View>
     </ScrollView>
   );
@@ -664,6 +682,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontFamily: "Roboto",
     marginTop: height / 40,
+  },
+  overlay: {
+    position: 'absolute',
+    
   },
   algoButton: {
     justifyContent: "center",
@@ -687,28 +709,28 @@ const styles = StyleSheet.create({
     height: height / 13,
     justifyContent: "center",
     alignItems: "center",
-    margin: 0,
     borderWidth: 1.3,
     borderColor: "rgba(0,0,0,0.25)",
   },
   processtime: {
-    height: height / 26,
+    height: height / 40,
     justifyContent: "center",
     alignItems: "center",
-    margin: 0,
     borderBottomWidth: 1.3,
     borderLeftWidth: 1,
     borderRightWidth: 1,
     borderLeftColor: "rgba(0,0,0,1)",
     borderBottomColor: "rgba(0,0,0,1)",
+    marginTop:height*0.003
   },
   processText: {
     color: "white",
-    fontWeight: "500",
+    fontWeight: "bold",
   },
   processText2: {
     color: "black",
     fontWeight: "500",
+    fontSize: width / 30,
   },
   tableContainer: {
     marginTop: 20,
