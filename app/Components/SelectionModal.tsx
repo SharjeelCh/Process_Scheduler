@@ -28,6 +28,7 @@ const SelectionModal = ({
   setProcessesssrr,
   settimequantumssrr,
   setProcessessrr,
+  setProcessesssrtf
 }) => {
   const [textinput, settextinput] = useState("");
   const [lockti, setlockti] = useState(true);
@@ -36,6 +37,7 @@ const SelectionModal = ({
   const [showps, setshowps] = useState(false);
   const [showrr, setshowrr] = useState(false);
   const [showsrr, setshowsrr] = useState(false);
+  const [showsrtf, setshowsrtf] = useState(false);
   const [dataObject, setDataObject] = useState(null);
   const [dataObjectps, setDataObjectps] = useState(null);
   const [dataObjectrr, setDataObjectrr] = useState(null);
@@ -117,7 +119,13 @@ const SelectionModal = ({
         handleCreateObject();
         setshowsjf(true);
         console.log("sjf");
-      } else if (value == "Priority Scheduling") {
+      }else if (value == "Shortest Remaining Time First") {
+        setlockti(false);
+        handleCreateObject();
+        setshowsrtf(true);
+        console.log("srtf");
+      } 
+       else if (value == "Priority Scheduling") {
         setlockti(false);
         handleCreateObjectPrioritySheduling();
         setshowps(true);
@@ -628,6 +636,108 @@ const SelectionModal = ({
     );
   };
 
+
+  const updateArrivalTimessrtf = (id, value) => {
+    const newDataObject = dataObject.map((item) => {
+      if (item.id === id) {
+        return {
+          ...item,
+          arrivalTime: isNaN(value) ? item.arrivalTime : parseInt(value),
+        };
+      }
+      return item;
+    });
+    setDataObject(newDataObject);
+    setProcessesssrtf(newDataObject);
+  };
+
+  const updateBurstTimessrtf = (id, value) => {
+    const newDataObject = dataObject.map((item) => {
+      if (item.id === id) {
+        return { ...item, burstTime: parseInt(value) };
+      }
+      return item;
+    });
+    setDataObject(newDataObject);
+    setProcessesssrtf(newDataObject);
+  };
+
+
+
+  const SRTFview = () => {
+    return (
+      <FlatList
+        style={{ height: height / 2.6 }}
+        data={dataObject}
+        scrollEnabled={true}
+        renderItem={({ item }) => {
+          return (
+            <ScrollView>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-evenly",
+                  marginTop: width / 30,
+                }}
+              >
+                <View>
+                  <Text style={{ fontSize: width / 24 }}>PID : {item.id}</Text>
+                </View>
+                <View
+                  style={{
+                    width: width / 4.6,
+                    height: height / 17,
+                    borderWidth: 0.25,
+                    borderColor: "grey",
+                    padding: width / 70,
+                    borderRadius: 3,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <TextInput
+                    placeholder="AT"
+                    keyboardType="numeric"
+                    style={{ height: height / 17, fontSize: width / 24 }}
+                    maxLength={4}
+                    value={item.arrivalTime?.toString()}
+                    onChangeText={(val) => updateArrivalTimessrtf(item.id, val)}
+                  />
+                </View>
+                <View
+                  style={{
+                    width: width / 4.6,
+                    height: height / 17,
+                    borderWidth: 0.25,
+                    borderColor: "grey",
+                    padding: width / 70,
+                    borderRadius: 3,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <TextInput
+                    placeholder="BT"
+                    keyboardType="numeric"
+                    style={{ height: height / 17, fontSize: width / 24 }}
+                    maxLength={4}
+                    value={item.burstTime?.toString()}
+                    onChangeText={(val) => {
+                      updateBurstTimessrtf(item.id, val);
+                    }}
+                  />
+                </View>
+              </View>
+            </ScrollView>
+          );
+        }}
+      />
+    );
+  };
+
+
+
   const updateArrivalTimessrr = (id, value) => {
     const newDataObject = dataObjectsrr.map((item) => {
       if (item.id === id) {
@@ -783,6 +893,10 @@ const SelectionModal = ({
               label="Shortest Job First (SJF)"
               value="Shortest Job First (SJF)"
             />
+             <Picker.Item
+              label="Shortest Remaining Time First"
+              value="Shortest Remaining Time First"
+            />
             <Picker.Item
               label="First Come First Serve"
               value="First Come First Serve"
@@ -842,9 +956,15 @@ const SelectionModal = ({
           {value == "First Come First Serve" && custom && showfcfs && (
             <FCFSview />
           )}
+         
           {value == "Shortest Job First (SJF)" && custom && showsjf && (
             <SJFview />
           )}
+           {
+            value == "Shortest Remaining Time First" && custom && showsrtf && (
+              <SRTFview />
+            )
+          }
           {value == "Priority Scheduling" && custom && showps && <PSview />}
           {value == "Round Robin with Priority" && custom && showrr && (
             <RRview />

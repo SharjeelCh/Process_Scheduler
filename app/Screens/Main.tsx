@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -7,12 +7,21 @@ import {
   RefreshControl,
   StyleSheet,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import SelectionModal from "../Components/SelectionModal";
 import { height, width } from "../Components/Dimensions";
 import { ActivityIndicator } from "react-native-paper";
-import * as font from "expo-font";
+import * as mediaLibrary from "expo-media-library";
+
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
+
 import { StatusBar } from "expo-status-bar";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { captureRef } from "react-native-view-shot";
+import DownloadModal from "../Components/DownloadModal";
+import Alert from "../Components/Alert";
 
 const Main = () => {
   const [visible, setVisible] = useState(false);
@@ -22,18 +31,52 @@ const Main = () => {
   const [ganttData, setGanttData] = useState([]);
   const [tableData, setTableData] = useState(null);
   const [timeQuantum, setTimeQuantum] = useState(0);
+  const [showdownloadModal,setshowdownloadModal]=useState(false)
+  const [showAlert,setshowAlert]=useState(false)
+
   const [show, setShow] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const viewRef = useRef(null);
+  const viewRef2=useRef(null);
 
+
+  const captureView = async () => {
+    try {
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      const uri = await captureRef(viewRef, {
+        format:'jpg',
+        quality:1,
+      });
+      console.log('Image saved to', uri);
+  
+      const asset = await mediaLibrary.createAssetAsync(uri);
+      await mediaLibrary.saveToLibraryAsync(asset.uri);
+
+      setshowdownloadModal(true);
+  
+      return uri;
+    } catch (error) {
+      console.error('Error capturing view:', error);
+    }
+  };
+
+
+  const handleGeneratePDF = async () => {
+    await captureView()
+  };
+
+
+  
   const wait = (timeout) => {
-    return new Promise(resolve => setTimeout(resolve, timeout));
-  }
+    return new Promise((resolve) => setTimeout(resolve, timeout));
+  };
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    wait(2000).then(() => setRefreshing(false)); // simulate the delay of reloading data
-  }, []);
-  
+    wait(400).then(() => setRefreshing(false));
+  });
+
   useEffect(() => {
     console.log("Algorithm changed to", algorithm);
     console.log("Custom parameter is", custom);
@@ -51,10 +94,11 @@ const Main = () => {
   const calculateWaitingTime = (processes, ganttChart) => {
     let waitingTimes = {};
     processes.forEach((process) => {
-      let startTime = ganttChart.find(
-        (entry) => entry.id === process.id
-      ).startTime;
-      waitingTimes[process.id] = startTime - process.arrivalTime;
+      let endTime = ganttChart
+        .filter((entry) => entry.id === process.id)
+        .pop().endTime;
+      waitingTimes[process.id] =
+        endTime - process.arrivalTime - process.burstTime;
     });
     return waitingTimes;
   };
@@ -129,6 +173,56 @@ const Main = () => {
 
     return ganttChart;
   };
+
+  const srtfAlgorithm =(originalProcesses) => {
+    let currentTime = 0;
+    let ganttChart = [];
+    let processQueue = [];
+    let processes = deepCopyProcesses(originalProcesses);
+
+    processes.sort((a, b) => a.arrivalTime - b.arrivalTime);
+
+    while (processes.length > 0 || processQueue.length > 0) {
+      while (processes.length > 0 && processes[0].arrivalTime <= currentTime) {
+        processQueue.push(processes.shift());
+      }
+
+      processQueue.sort((a, b) => a.burstTime - b.burstTime);
+
+      if (processQueue.length > 0) {
+        let currentProcess = processQueue.shift();
+
+        let nextArrivalTime =
+          processes.length > 0 ? processes[0].arrivalTime : Number.MAX_VALUE;
+        let runTime = Math.min(
+          currentProcess.burstTime,
+          nextArrivalTime - currentTime
+        );
+
+        ganttChart.push({
+          id: currentProcess.id,
+          startTime: currentTime,
+          endTime: currentTime + runTime,
+        });
+
+        currentProcess.burstTime -= runTime;
+        currentTime += runTime;
+
+        if (currentProcess.burstTime > 0) {
+          processQueue.push(currentProcess);
+        }
+      } else {
+        ganttChart.push({
+          id: "wait",
+          startTime: currentTime,
+          endTime: processes[0].arrivalTime,
+        });
+        currentTime = processes[0].arrivalTime;
+      }
+    }
+
+    return ganttChart;
+  }
 
   const priorityAlgorithm = (originalProcesses) => {
     let currentTime = 0;
@@ -309,6 +403,8 @@ const Main = () => {
         ganttChart = roundRobinAlgorithm(processes, timeQuantum);
       } else if (algorithm === "Round Robin with Priority") {
         ganttChart = roundRobinWithPriorityAlgorithm(processes, timeQuantum);
+      }  else if (algorithm === "Shortest Remaining Time First") {
+        ganttChart = srtfAlgorithm(processes);
       }
 
       setGanttData(ganttChart);
@@ -343,7 +439,7 @@ const Main = () => {
       setShow(false);
     } else {
       await delay(1200);
-      alert("Please select an algorithm");
+      setshowAlert(true);
       setShow(false);
     }
   };
@@ -354,15 +450,15 @@ const Main = () => {
 
   return (
     <ScrollView
-    scrollEnabled={false}
-    contentContainerStyle={{justifyContent:'center',flex:1}}
-    refreshControl={
-      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-    }
+      ref={viewRef}
+      scrollEnabled={false}
+      contentContainerStyle={{ justifyContent: "center", flex: 1 }}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
       style={styles.container}
-     
     >
-      <StatusBar style="auto" backgroundColor="white"/>
+      <StatusBar style="auto" backgroundColor='white' />
       <Text style={styles.maintext}>Process Scheduler</Text>
       <Text
         style={{
@@ -387,15 +483,15 @@ const Main = () => {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-       
         style={styles.ganttContainer}
+        ref={viewRef2}
       >
         {ganttData.map((process, index) => (
           <View key={index}>
             <View
               style={{
                 ...styles.process,
-                width: (process.endTime - process.startTime) * 35, // Adjust scale as needed
+                width: (process.endTime - process.startTime) * 33, // Adjust scale as needed
                 backgroundColor:
                   process.id === "wait"
                     ? "#ccc"
@@ -403,9 +499,19 @@ const Main = () => {
               }}
             >
               <Text style={styles.processText}>
+                {process.id === "wait" ? `Wait` : `P${process.id}`}
+              </Text>
+            </View>
+            <View
+              style={{
+                ...styles.processtime,
+                width: (process.endTime - process.startTime) * 33, // Adjust scale as needed
+              }}
+            >
+              <Text style={styles.processText2}>
                 {process.id === "wait"
-                  ? `Wait (${process.startTime}-${process.endTime})`
-                  : `P${process.id} (${process.startTime}-${process.endTime})`}
+                  ? `${process.startTime}-${process.endTime}`
+                  : `${process.startTime}-${process.endTime}`}
               </Text>
             </View>
           </View>
@@ -425,29 +531,57 @@ const Main = () => {
           setProcessesssrr={setProcesses}
           settimequantumssrr={setTimeQuantum}
           setProcessessrr={setProcesses}
+          setProcessesssrtf={setProcesses}
         />
       </View>
 
       {tableData && (
-        <ScrollView style={styles.tableContainer}>
-          <Text style={styles.tableHeader}>Process Table</Text>
+        <ScrollView
+          style={styles.tableContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              marginBottom: height / 40,
+            }}
+          >
+            <Text style={styles.tableHeader}>Process Table</Text>
+            <TouchableOpacity
+              style={{
+                width: 35,
+                height: 35,
+                borderRadius: 100,
+                backgroundColor: "rgba(255, 0, 0, 0.7)",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+              onPress={handleGeneratePDF}
+            >
+              <Icon name="download" size={20} color={"white"} />
+            </TouchableOpacity>
+          </View>
+
           <View style={styles.table}>
             <View style={styles.tableRow}>
               <Text style={styles.tableCell}>Process ID</Text>
               <Text style={styles.tableCell}>Arrival Time</Text>
               <Text style={styles.tableCell}>Burst Time</Text>
+              <Text style={styles.tableCell}>Priority</Text>
+
               <Text style={styles.tableCell}>Waiting Time</Text>
               <Text style={styles.tableCell}>Turnaround Time</Text>
-              <Text style={styles.tableCell}>Response Time</Text>
             </View>
             {tableData.processes.map((process) => (
               <View style={styles.tableRow} key={process.id}>
                 <Text style={styles.tableCell}>{process.id}</Text>
                 <Text style={styles.tableCell}>{process.arrivalTime}</Text>
                 <Text style={styles.tableCell}>{process.burstTime}</Text>
+                <Text style={styles.tableCell}>{process.priority}</Text>
                 <Text style={styles.tableCell}>{process.waitingTime}</Text>
                 <Text style={styles.tableCell}>{process.turnaroundTime}</Text>
-                <Text style={styles.tableCell}>{process.responseTime}</Text>
               </View>
             ))}
             <View style={styles.tableRow}>
@@ -484,6 +618,7 @@ const Main = () => {
             Select Algorithm
           </Text>
         </TouchableOpacity>
+
         {show ? (
           <ActivityIndicator
             animating={show}
@@ -506,6 +641,18 @@ const Main = () => {
             </Text>
           </TouchableOpacity>
         )}
+        <DownloadModal
+      showmodal={showdownloadModal}
+      setshowmodal={setshowdownloadModal}
+      closemodal={false}
+      text={'Image Saved to Gallery'}
+      />
+      <Alert
+      showmodal={showAlert}
+      setshowmodal={setshowAlert}
+      closemodal={false}
+      text={'No Algorithm Selected!'}
+      />
       </View>
     </ScrollView>
   );
@@ -529,7 +676,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-
+    backgroundColor: "white",
   },
   ganttContainer: {
     flexDirection: "row",
@@ -544,8 +691,23 @@ const styles = StyleSheet.create({
     borderWidth: 1.3,
     borderColor: "rgba(0,0,0,0.25)",
   },
+  processtime: {
+    height: height / 26,
+    justifyContent: "center",
+    alignItems: "center",
+    margin: 0,
+    borderBottomWidth: 1.3,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderLeftColor: "rgba(0,0,0,1)",
+    borderBottomColor: "rgba(0,0,0,1)",
+  },
   processText: {
     color: "white",
+    fontWeight: "500",
+  },
+  processText2: {
+    color: "black",
     fontWeight: "500",
   },
   tableContainer: {
