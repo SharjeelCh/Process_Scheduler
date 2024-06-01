@@ -4,7 +4,7 @@ import { Button, Portal, PaperProvider } from "react-native-paper";
 import { height, width } from "./Dimensions";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
-const Alert = ({ showmodal, closemodal, setshowmodal, text }) => {
+const Alert = ({ showmodal, closemodal, setshowmodal, text, icon  }) => {
   useEffect(() => {
     if (showmodal) {
       setTimeout(() => {
@@ -40,13 +40,13 @@ const Alert = ({ showmodal, closemodal, setshowmodal, text }) => {
             justifyContent: "center",
           }}
         >
-            <Icon name="exclamation-triangle" size={14} color={"white"} />
+            <Icon name={icon} size={14} color={"white"} />
 
           <Text
             style={{
               fontWeight: "600",
               fontSize: width / 27,
-              letterSpacing: width / 99,
+              letterSpacing: width / 130,
               marginHorizontal: width / 30,
               color: "white",
             }}

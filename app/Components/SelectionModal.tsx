@@ -14,6 +14,9 @@ import {
 import { height, width } from "./Dimensions";
 import { Picker } from "@react-native-picker/picker";
 import { RadioButton, Checkbox } from "react-native-paper";
+import Alert from "./Alert";
+import { StatusBar } from "expo-status-bar";
+import { LinearGradient } from "expo-linear-gradient";
 
 const SelectionModal = ({
   visible,
@@ -28,7 +31,7 @@ const SelectionModal = ({
   setProcessesssrr,
   settimequantumssrr,
   setProcessessrr,
-  setProcessesssrtf
+  setProcessesssrtf,
 }) => {
   const [textinput, settextinput] = useState("");
   const [lockti, setlockti] = useState(true);
@@ -44,6 +47,7 @@ const SelectionModal = ({
   const [dataObjectsrr, setDataObjectsrr] = useState(null);
   const [showclose, setshowclose] = useState(false);
   const [timeQuantum, setTimeQuantum] = useState(0);
+  const [showdownloadModal, setshowdownloadModal] = useState(false);
 
   const handleRadioButtonPress = () => {
     setCustom(!custom);
@@ -83,7 +87,7 @@ const SelectionModal = ({
     }
     const arr = [];
     for (let i = 1; i <= num; i++) {
-      arr.push({ id: i, arrivalTime: '', burstTime: '', tq: '', priority: '' });
+      arr.push({ id: i, arrivalTime: "", burstTime: "", tq: "", priority: "" });
     }
     setDataObjectrr(arr);
   };
@@ -103,10 +107,7 @@ const SelectionModal = ({
 
   const handleNumofProcesses = (num: any) => {
     if (!num) {
-      ToastAndroid.show(
-        "Number of processes cannot be empty",
-        ToastAndroid.BOTTOM
-      );
+      setshowdownloadModal(true);
     } else {
       if (value == "First Come First Serve") {
         setlockti(false);
@@ -119,13 +120,12 @@ const SelectionModal = ({
         handleCreateObject();
         setshowsjf(true);
         console.log("sjf");
-      }else if (value == "Shortest Remaining Time First") {
+      } else if (value == "Shortest Remaining Time First") {
         setlockti(false);
         handleCreateObject();
         setshowsrtf(true);
         console.log("srtf");
-      } 
-       else if (value == "Priority Scheduling") {
+      } else if (value == "Priority Scheduling") {
         setlockti(false);
         handleCreateObjectPrioritySheduling();
         setshowps(true);
@@ -485,7 +485,7 @@ const SelectionModal = ({
                       style={{ height: height / 17, fontSize: width / 24 }}
                       maxLength={4}
                       value={item.arrivalTime?.toString()}
-                    onChangeText={(val) => updateArrivalTimerr(item.id, val)}
+                      onChangeText={(val) => updateArrivalTimerr(item.id, val)}
                     />
                   </View>
                   <View
@@ -506,7 +506,7 @@ const SelectionModal = ({
                       style={{ height: height / 17, fontSize: width / 24 }}
                       maxLength={4}
                       value={item.burstTime?.toString()}
-                    onChangeText={(val) => updateBurstTimerr(item.id, val)}
+                      onChangeText={(val) => updateBurstTimerr(item.id, val)}
                     />
                   </View>
                   <View
@@ -527,7 +527,7 @@ const SelectionModal = ({
                       style={{ height: height / 17, fontSize: width / 24 }}
                       maxLength={4}
                       value={item.priority?.toString()}
-                    onChangeText={(val) => updatePriotityrr(item.id, val)}
+                      onChangeText={(val) => updatePriotityrr(item.id, val)}
                     />
                   </View>
                 </View>
@@ -636,7 +636,6 @@ const SelectionModal = ({
     );
   };
 
-
   const updateArrivalTimessrtf = (id, value) => {
     const newDataObject = dataObject.map((item) => {
       if (item.id === id) {
@@ -661,8 +660,6 @@ const SelectionModal = ({
     setDataObject(newDataObject);
     setProcessesssrtf(newDataObject);
   };
-
-
 
   const SRTFview = () => {
     return (
@@ -735,8 +732,6 @@ const SelectionModal = ({
       />
     );
   };
-
-
 
   const updateArrivalTimessrr = (id, value) => {
     const newDataObject = dataObjectsrr.map((item) => {
@@ -882,6 +877,7 @@ const SelectionModal = ({
 
   return (
     <Modal visible={visible} animationType="fade" transparent={true}>
+      <StatusBar backgroundColor="rgba(0, 0, 0, 0.5)" />
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalText}>Select an Algorithm</Text>
@@ -893,7 +889,7 @@ const SelectionModal = ({
               label="Shortest Job First (SJF)"
               value="Shortest Job First (SJF)"
             />
-             <Picker.Item
+            <Picker.Item
               label="Shortest Remaining Time First"
               value="Shortest Remaining Time First"
             />
@@ -956,15 +952,13 @@ const SelectionModal = ({
           {value == "First Come First Serve" && custom && showfcfs && (
             <FCFSview />
           )}
-         
+
           {value == "Shortest Job First (SJF)" && custom && showsjf && (
             <SJFview />
           )}
-           {
-            value == "Shortest Remaining Time First" && custom && showsrtf && (
-              <SRTFview />
-            )
-          }
+          {value == "Shortest Remaining Time First" && custom && showsrtf && (
+            <SRTFview />
+          )}
           {value == "Priority Scheduling" && custom && showps && <PSview />}
           {value == "Round Robin with Priority" && custom && showrr && (
             <RRview />
@@ -979,20 +973,47 @@ const SelectionModal = ({
                 handleNumofProcesses(textinput);
               }}
             >
+              <LinearGradient
+                colors={['#ff0066', '#E3A14F']}// Define your gradient colors here
+                start={[0, 0]}
+                end={[1, 1]}
+                style={styles.gradient}
+              />
               <Text style={styles.closeButtonText}>Done</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <LinearGradient
+                colors={['#ff0066', '#E3A14F']} // Define your gradient colors here
+                start={[0, 0]}
+                end={[1, 1]}
+                style={styles.gradient}
+              />
               <Text style={styles.closeButtonText}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
       </View>
+      <Alert
+        showmodal={showdownloadModal}
+        setshowmodal={setshowdownloadModal}
+        closemodal={false}
+        icon={"exclamation-triangle"}
+        text={"processes cannot be empty"}
+      />
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
+  gradient: {
+    padding: 15,
+    alignItems: "center",
+    borderRadius: 5,
+    width: 120,
+    height: 100,
+    position: "absolute",
+  },
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -1019,15 +1040,18 @@ const styles = StyleSheet.create({
   closeButton: {
     marginTop: width * 0.05,
     paddingHorizontal: width * 0.1,
-    backgroundColor: "green",
+    backgroundColor: "#F1F0EC",
     alignItems: "center",
     justifyContent: "center",
     height: height / 18,
     borderRadius: width * 0.01,
+    elevation: 5,
+    overflow: "hidden",
   },
   closeButtonText: {
     color: "white",
     fontSize: width * 0.04,
+    fontWeight:'700'
   },
 });
 
