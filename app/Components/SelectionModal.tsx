@@ -204,8 +204,8 @@ const SelectionModal = ({
                   <TextInput
                     placeholder="AT"
                     keyboardType="numeric"
-                    style={{ height: height / 17, fontSize: width / 24 }}
-                    maxLength={4}
+                    style={{ height: height / 17, fontSize: width / 24 ,width:width/4.8,textAlign:'center',textAlignVertical:'center'}}
+                    maxLength={3}
                     value={item.arrivalTime?.toString()}
                     onChangeText={(val) => updateArrivalTime(item.id, val)}
                   />

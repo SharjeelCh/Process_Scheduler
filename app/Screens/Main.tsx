@@ -24,8 +24,12 @@ import DownloadModal from "../Components/DownloadModal";
 import Alert from "../Components/Alert";
 import { Line, Svg } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 
 const Main = () => {
+  
+  const router = useRouter();
+
   const [visible, setVisible] = useState(false);
   const [custom, setCustom] = useState(false);
   const [algorithm, setAlgorithm] = useState("");
@@ -72,6 +76,7 @@ const Main = () => {
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
+    router.push('/Screens/Main')
     wait(400).then(() => setRefreshing(false));
   });
 
@@ -482,7 +487,6 @@ const Main = () => {
 
   return (
     <ScrollView
-      ref={viewRef}
       scrollEnabled={false}
       contentContainerStyle={{ justifyContent: "center", flex: 1 }}
       refreshControl={
@@ -490,12 +494,7 @@ const Main = () => {
       }
       style={styles.container}
     >
-      <LinearGradient
-        colors={["#FFFFFF", "#E4E2F3"]}
-        start={[0, 0]}
-        end={[1, 1]}
-        style={styles.gradient2}
-      />
+     
 
       <StatusBar style="auto" backgroundColor="white" />
       <View style={{ flex: 1, padding: 20 }}>
@@ -581,6 +580,8 @@ const Main = () => {
 
         {tableData && (
           <ScrollView
+          ref={viewRef}
+
             style={styles.tableContainer}
             showsVerticalScrollIndicator={false}
           >
@@ -604,6 +605,19 @@ const Main = () => {
                 }}
                 onPress={handleGeneratePDF}
               >
+                <LinearGradient
+                  colors={["#ff0066", "#E3A14F"]}
+                  start={[0, 0]}
+                  end={[1, 1]}
+                  style={{
+                    width: 35,
+                    height: 35,
+                    borderRadius: 100,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    position: "absolute",
+                  }}
+                />
                 <Icon name="download" size={20} color={"white"} />
               </TouchableOpacity>
             </View>
@@ -767,6 +781,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     overflow: "hidden",
     position: "relative",
+    
   },
   ganttContainer: {
     flexDirection: "row",
@@ -804,8 +819,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
     width: "100%",
     height: height / 2.5,
+    backgroundColor:'white',
     marginBottom: height / 20,
   },
+
   tableHeader: {
     fontSize: 18,
     fontWeight: "bold",
