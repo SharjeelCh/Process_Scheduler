@@ -114,32 +114,32 @@ const SelectionModal = ({
         handleCreateObject();
         setshowfcfs(true);
 
-        console.log("fcfs");
+        
       } else if (value == "Shortest Job First (SJF)") {
         setlockti(false);
         handleCreateObject();
         setshowsjf(true);
-        console.log("sjf");
+        
       } else if (value == "Shortest Remaining Time First") {
         setlockti(false);
         handleCreateObject();
         setshowsrtf(true);
-        console.log("srtf");
+        
       } else if (value == "Priority Scheduling") {
         setlockti(false);
         handleCreateObjectPrioritySheduling();
         setshowps(true);
-        console.log("ps");
+        
       } else if (value == "Round Robin with Priority") {
         setlockti(false);
         handleCreateObjectRoundRobin();
         setshowrr(true);
-        console.log("rr");
+        
       } else if (value == "Round Robin") {
         setlockti(false);
         handleCreateObjectRoundRobinSimple();
         setshowsrr(true);
-        console.log("srr");
+        
       }
     }
   };
@@ -225,7 +225,7 @@ const SelectionModal = ({
                   <TextInput
                     placeholder="BT"
                     keyboardType="numeric"
-                    style={{ height: height / 17, fontSize: width / 24 }}
+                    style={{ height: height / 17, fontSize: width / 24,width:width/4.8,textAlign:'center',textAlignVertical:'center' }}
                     maxLength={4}
                     value={item.burstTime?.toString()}
                     onChangeText={(val) => updateBurstTime(item.id, val)}
@@ -240,7 +240,7 @@ const SelectionModal = ({
   };
 
   useEffect(() => {
-    console.log(dataObject);
+    
   }, [dataObject]);
 
   const updateArrivalTimeps = (id, value) => {
@@ -313,7 +313,7 @@ const SelectionModal = ({
                   <TextInput
                     placeholder="AT"
                     keyboardType="numeric"
-                    style={{ height: height / 17, fontSize: width / 24 }}
+                    style={{ height: height / 17, fontSize: width / 24 ,width:width/4.8,textAlign:'center',textAlignVertical:'center'}}
                     maxLength={4}
                     value={item.arrivalTime?.toString()}
                     onChangeText={(val) => updateArrivalTimeps(item.id, val)}
@@ -334,7 +334,7 @@ const SelectionModal = ({
                   <TextInput
                     placeholder="BT"
                     keyboardType="numeric"
-                    style={{ height: height / 17, fontSize: width / 24 }}
+                    style={{ height: height / 17, fontSize: width / 24 ,width:width/4.8,textAlign:'center',textAlignVertical:'center'}}
                     maxLength={4}
                     value={item.burstTime?.toString()}
                     onChangeText={(val) => updateBurstTimeps(item.id, val)}
@@ -410,11 +410,13 @@ const SelectionModal = ({
         <View
           style={{
             flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-evenly",
+            alignItems: 'center',
+            justifyContent:'flex-start',
+            gap:width*0.06,
+            marginHorizontal:height/90
           }}
         >
-          <Text style={{ fontSize: width / 24 }}>Time Quantum:</Text>
+          <Text style={{ fontSize: width / 24}}>Time Quantum:</Text>
 
           <View
             style={{
@@ -432,7 +434,7 @@ const SelectionModal = ({
               placeholder="Quantum"
               keyboardType="numeric"
               editable={true}
-              style={{ height: height / 17, fontSize: width / 24 }}
+              style={{ height: height / 17, fontSize: width / 24,width:width/4.8,textAlign:'center',textAlignVertical:'center' }}
               maxLength={4}
               value={timeQuantum?.toString()}
               onChangeText={(val) => {
@@ -482,7 +484,7 @@ const SelectionModal = ({
                     <TextInput
                       placeholder="AT"
                       keyboardType="numeric"
-                      style={{ height: height / 17, fontSize: width / 24 }}
+                      style={{ height: height / 17, fontSize: width / 21 ,width:width/6.5,textAlign:'center',textAlignVertical:'center'}}
                       maxLength={4}
                       value={item.arrivalTime?.toString()}
                       onChangeText={(val) => updateArrivalTimerr(item.id, val)}
@@ -503,7 +505,7 @@ const SelectionModal = ({
                     <TextInput
                       placeholder="BT"
                       keyboardType="numeric"
-                      style={{ height: height / 17, fontSize: width / 24 }}
+                      style={{ height: height / 17, fontSize: width / 21 ,width:width/6.5,textAlign:'center',textAlignVertical:'center'}}
                       maxLength={4}
                       value={item.burstTime?.toString()}
                       onChangeText={(val) => updateBurstTimerr(item.id, val)}
@@ -524,7 +526,7 @@ const SelectionModal = ({
                     <TextInput
                       placeholder="Priority"
                       keyboardType="numeric"
-                      style={{ height: height / 17, fontSize: width / 24 }}
+                      style={{ height: height / 21, fontSize: width / 24,width:width/6.5,textAlign:'center',textAlignVertical:'center' }}
                       maxLength={4}
                       value={item.priority?.toString()}
                       onChangeText={(val) => updatePriotityrr(item.id, val)}
@@ -599,7 +601,7 @@ const SelectionModal = ({
                   <TextInput
                     placeholder="AT"
                     keyboardType="numeric"
-                    style={{ height: height / 17, fontSize: width / 24 }}
+                    style={{ height: height / 17, fontSize: width / 24 ,width:width/4.8,textAlign:'center',textAlignVertical:'center'}}
                     maxLength={4}
                     value={item.arrivalTime?.toString()}
                     onChangeText={(val) => updateArrivalTimesjf(item.id, val)}
@@ -620,7 +622,7 @@ const SelectionModal = ({
                   <TextInput
                     placeholder="BT"
                     keyboardType="numeric"
-                    style={{ height: height / 17, fontSize: width / 24 }}
+                    style={{ height: height / 17, fontSize: width / 24,width:width/4.8,textAlign:'center',textAlignVertical:'center' }}
                     maxLength={4}
                     value={item.burstTime?.toString()}
                     onChangeText={(val) => {
@@ -696,7 +698,7 @@ const SelectionModal = ({
                   <TextInput
                     placeholder="AT"
                     keyboardType="numeric"
-                    style={{ height: height / 17, fontSize: width / 24 }}
+                    style={{ height: height / 17, fontSize: width / 24 ,width:width/4.8,textAlign:'center',textAlignVertical:'center'}}
                     maxLength={4}
                     value={item.arrivalTime?.toString()}
                     onChangeText={(val) => updateArrivalTimessrtf(item.id, val)}
@@ -717,7 +719,7 @@ const SelectionModal = ({
                   <TextInput
                     placeholder="BT"
                     keyboardType="numeric"
-                    style={{ height: height / 17, fontSize: width / 24 }}
+                    style={{ height: height / 17, fontSize: width / 24 ,width:width/4.8,textAlign:'center',textAlignVertical:'center'}}
                     maxLength={4}
                     value={item.burstTime?.toString()}
                     onChangeText={(val) => {
@@ -765,7 +767,9 @@ const SelectionModal = ({
           style={{
             flexDirection: "row",
             alignItems: "center",
-            justifyContent: "space-evenly",
+            justifyContent: 'flex-start',
+            gap:width*0.05,
+            marginHorizontal:height/60
           }}
         >
           <Text style={{ fontSize: width / 24 }}>Time Quantum:</Text>
@@ -785,7 +789,7 @@ const SelectionModal = ({
             <TextInput
               placeholder="Quantum"
               keyboardType="numeric"
-              style={{ height: height / 17, fontSize: width / 24 }}
+              style={{ height: height / 17, fontSize: width / 24 ,width:width/4.8,textAlign:'center',textAlignVertical:'center'}}
               maxLength={4}
               value={timeQuantum?.toString()}
               onChangeText={(val) => {
@@ -835,7 +839,7 @@ const SelectionModal = ({
                     <TextInput
                       placeholder="AT"
                       keyboardType="numeric"
-                      style={{ height: height / 17, fontSize: width / 24 }}
+                      style={{ height: height / 17, fontSize: width / 24 ,width:width/4.8,textAlign:'center',textAlignVertical:'center'}}
                       maxLength={4}
                       value={item.arrivalTime?.toString()}
                       onChangeText={(val) => {
@@ -858,7 +862,7 @@ const SelectionModal = ({
                     <TextInput
                       placeholder="BT"
                       keyboardType="numeric"
-                      style={{ height: height / 17, fontSize: width / 24 }}
+                      style={{ height: height / 17, fontSize: width / 24,width:width/4.8,textAlign:'center',textAlignVertical:'center' }}
                       maxLength={4}
                       value={item.burstTime?.toString()}
                       onChangeText={(val) => {

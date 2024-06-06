@@ -18,7 +18,7 @@ const Alert = ({ showmodal, closemodal, setshowmodal, text, icon  }) => {
       visible={showmodal}
       onDismiss={closemodal}
       transparent={true}
-      animationType="slide"
+      animationType='fade'
     >
       <View
         style={{
@@ -30,22 +30,22 @@ const Alert = ({ showmodal, closemodal, setshowmodal, text, icon  }) => {
       >
         <View
           style={{
-            width: "86%",
-            height: height / 20,
-            backgroundColor: "rgba(0, 0, 0, 0.6)",
-            padding: width / 30,
+            width: "76%",
+            height: height / 23,
+            backgroundColor: "rgba(128, 128, 128, 1)",
+            padding: width / 36,
             alignItems: "center",
             borderRadius: width / 2,
             flexDirection: "row",
             justifyContent: "center",
           }}
         >
-            <Icon name={icon} size={14} color={"white"} />
+            <Icon name={icon} size={10} color={"white"} />
 
           <Text
             style={{
               fontWeight: "600",
-              fontSize: width / 27,
+              fontSize: width / 30,
               letterSpacing: width / 130,
               marginHorizontal: width / 30,
               color: "white",

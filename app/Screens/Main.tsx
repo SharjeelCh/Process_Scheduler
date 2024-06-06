@@ -27,7 +27,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 
 const Main = () => {
-  
   const router = useRouter();
 
   const [visible, setVisible] = useState(false);
@@ -53,7 +52,6 @@ const Main = () => {
         format: "jpg",
         quality: 1,
       });
-      console.log("Image saved to", uri);
 
       const asset = await mediaLibrary.createAssetAsync(uri);
       await mediaLibrary.saveToLibraryAsync(asset.uri);
@@ -76,15 +74,9 @@ const Main = () => {
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    router.push('/Screens/Main')
+    router.push("/Screens/Main");
     wait(400).then(() => setRefreshing(false));
   });
-
-  useEffect(() => {
-    console.log("Algorithm changed to", algorithm);
-    console.log("Custom parameter is", custom);
-    console.log("time quantum is", timeQuantum);
-  }, [algorithm]);
 
   const handleValueChange = (value) => {
     setAlgorithm(value);
@@ -390,7 +382,6 @@ const Main = () => {
   const calculateGanttData = async () => {
     setShow(true);
 
-    console.log(processes);
     let ganttChart = [];
 
     if (algorithm !== "") {
@@ -447,10 +438,6 @@ const Main = () => {
     }
   };
 
-  useEffect(() => {
-    console.log("Gantt data changed to", processes);
-  }, [processes]);
-
   const DiagonalLines = ({ width, height }) => {
     const numberOfLines = Math.ceil(width);
     const lines = [];
@@ -494,8 +481,6 @@ const Main = () => {
       }
       style={styles.container}
     >
-     
-
       <StatusBar style="auto" backgroundColor="white" />
       <View style={{ flex: 1, padding: 20 }}>
         <Text style={styles.maintext}>Process Scheduler</Text>
@@ -536,7 +521,7 @@ const Main = () => {
                     backgroundColor:
                       process.id === "wait"
                         ? "#ccc"
-                        : `hsl(${process.id * 50}, 63%, 46%)`,
+                        : `hsl(${process.id * 50}, 80%, 50%)`,
                   }}
                 >
                   {process.id === "wait" && (
@@ -553,8 +538,11 @@ const Main = () => {
                   }}
                 >
                   <Text style={styles.processText2}>
-                    {`${process.startTime}-${process.endTime}`}
+                    {`${process.startTime}`}
                   </Text>
+                  <Text
+                    style={styles.processText2}
+                  >{`${process.endTime}`}</Text>
                 </View>
               </View>
             );
@@ -580,8 +568,7 @@ const Main = () => {
 
         {tableData && (
           <ScrollView
-          ref={viewRef}
-
+            ref={viewRef}
             style={styles.tableContainer}
             showsVerticalScrollIndicator={false}
           >
@@ -781,7 +768,6 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     overflow: "hidden",
     position: "relative",
-    
   },
   ganttContainer: {
     flexDirection: "row",
@@ -797,9 +783,11 @@ const styles = StyleSheet.create({
   },
   processtime: {
     height: height / 40,
-    justifyContent: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 5,
     alignItems: "center",
-    borderBottomWidth: 1.3,
+    borderBottomWidth: 1,
     borderLeftWidth: 1,
     borderRightWidth: 1,
     borderLeftColor: "rgba(0,0,0,1)",
@@ -819,7 +807,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     width: "100%",
     height: height / 2.5,
-    backgroundColor:'white',
+    backgroundColor: "white",
     marginBottom: height / 20,
   },
 

@@ -30,9 +30,10 @@ const DownloadModal = ({ showmodal, closemodal, setshowmodal, text }) => {
       >
         <View
           style={{
-            width: "86%",
-            height: height / 20,
-            backgroundColor: "rgba(0, 0, 0, 0.6)",
+            width: "78%",
+            height: height / 23,
+            backgroundColor: "rgba(128, 128, 128, 1)",
+
             padding: width / 30,
             alignItems: "center",
             borderRadius: width / 2,
@@ -41,13 +42,13 @@ const DownloadModal = ({ showmodal, closemodal, setshowmodal, text }) => {
           }}
         >
           {text == "Image Saved to Gallery" && (
-            <Icon name="check-circle" size={14} color={"white"} />
+            <Icon name="check-circle" size={12} color={"white"} />
           )}
 
           <Text
             style={{
               fontWeight: "600",
-              fontSize: width / 27,
+              fontSize: width / 30,
               letterSpacing: width / 99,
               marginHorizontal: width / 30,
               color: "white",
