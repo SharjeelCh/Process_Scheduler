@@ -13,7 +13,6 @@ import SelectionModal from "../Components/SelectionModal";
 import { height, width } from "../Components/Dimensions";
 import { ActivityIndicator } from "react-native-paper";
 import * as mediaLibrary from "expo-media-library";
-
 import { StatusBar } from "expo-status-bar";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { captureRef } from "react-native-view-shot";
@@ -21,6 +20,8 @@ import Alert from "../Components/Alert";
 import { Line, Svg } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import * as FileSystem from 'expo-file-system';
+import RNFetchBlob from "rn-fetch-blob";
 
 const Main = () => {
   const router = useRouter();
@@ -39,6 +40,7 @@ const Main = () => {
   const [refreshing, setRefreshing] = useState(false);
   const viewRef = useRef(null);
   const viewRef2 = useRef(null);
+
 
   const captureView = async () => {
     try {
@@ -477,7 +479,7 @@ const Main = () => {
       }
       style={styles.container}
     >
-      <StatusBar style="auto" backgroundColor="white" />
+      <StatusBar style='dark' backgroundColor="white" />
       <View style={{ flex: 1, padding: 20 }}>
         <Text style={styles.maintext}>Process Scheduler</Text>
         <Text
