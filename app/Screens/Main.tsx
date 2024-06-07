@@ -14,13 +14,9 @@ import { height, width } from "../Components/Dimensions";
 import { ActivityIndicator } from "react-native-paper";
 import * as mediaLibrary from "expo-media-library";
 
-import * as Print from "expo-print";
-import * as Sharing from "expo-sharing";
-
 import { StatusBar } from "expo-status-bar";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { captureRef } from "react-native-view-shot";
-import DownloadModal from "../Components/DownloadModal";
 import Alert from "../Components/Alert";
 import { Line, Svg } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";

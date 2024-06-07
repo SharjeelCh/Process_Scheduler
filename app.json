@@ -18,7 +18,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.Process_Scheduler"
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -26,8 +27,17 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      "expo-asset"
     ],
-    "scheme": "process_scheduler"
+    "scheme": "process_scheduler",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "4b801ec6-9ffc-4809-a376-0b44286c33eb"
+      }
+    }
   }
 }
