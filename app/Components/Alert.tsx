@@ -2,9 +2,9 @@ import React, { useEffect } from "react";
 import { View, Text, Modal } from "react-native";
 import { Button, Portal, PaperProvider } from "react-native-paper";
 import { height, width } from "./Dimensions";
-import Icon from "react-native-vector-icons/FontAwesome5";
+import { FontAwesome } from "@expo/vector-icons";
 
-const Alert = ({ showmodal, closemodal, setshowmodal, text, icon  }) => {
+const Alert = ({ showmodal, closemodal, setshowmodal, text, icon }) => {
   useEffect(() => {
     if (showmodal) {
       setTimeout(() => {
@@ -18,35 +18,35 @@ const Alert = ({ showmodal, closemodal, setshowmodal, text, icon  }) => {
       visible={showmodal}
       onDismiss={closemodal}
       transparent={true}
-      animationType='fade'
+      animationType="fade"
     >
       <View
         style={{
           flex: 1,
           justifyContent: "flex-end",
           alignItems: "center",
-          marginBottom: height / 130,
+          marginBottom: height / 80,
         }}
       >
         <View
           style={{
             width: "76%",
-            height: height / 23,
+            height: height / 23.5,
             backgroundColor: "rgba(128, 128, 128, 1)",
             padding: width / 36,
             alignItems: "center",
-            borderRadius: width / 2,
+            borderRadius: width / 50,
             flexDirection: "row",
             justifyContent: "center",
           }}
         >
-            <Icon name={icon} size={10} color={"white"} />
+          <FontAwesome name={icon} size={10} color={"white"} />
 
           <Text
             style={{
               fontWeight: "600",
               fontSize: width / 30,
-              letterSpacing: width / 130,
+              letterSpacing: width / 160,
               marginHorizontal: width / 30,
               color: "white",
             }}

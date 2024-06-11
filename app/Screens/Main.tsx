@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import SelectionModal from "../Components/SelectionModal";
 import { height, width } from "../Components/Dimensions";
-import { ActivityIndicator } from "react-native-paper";
+import { ActivityIndicator, IconButton } from "react-native-paper";
 import * as mediaLibrary from "expo-media-library";
 import { StatusBar } from "expo-status-bar";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -20,13 +20,17 @@ import Alert from "../Components/Alert";
 import { Line, Svg } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import * as FileSystem from 'expo-file-system';
+import { MD3Colors } from "react-native-paper";
+
+import * as FileSystem from "expo-file-system";
 import RNFetchBlob from "rn-fetch-blob";
+import OptionModal from "../Components/OptionModal";
 
 const Main = () => {
   const router = useRouter();
 
   const [visible, setVisible] = useState(false);
+  const [downlaodModal, setdownloadModal] = useState(false);
   const [custom, setCustom] = useState(false);
   const [algorithm, setAlgorithm] = useState("");
   const [processes, setProcesses] = useState([]);
@@ -40,6 +44,10 @@ const Main = () => {
   const [refreshing, setRefreshing] = useState(false);
   const viewRef = useRef(null);
   const viewRef2 = useRef(null);
+
+  const toggleModalVisibility = () => {
+    setdownloadModal(!downlaodModal);
+  };
 
 
   const captureView = async () => {
@@ -63,6 +71,7 @@ const Main = () => {
   };
 
   const handleGeneratePDF = async () => {
+    setdownloadModal(false);
     await captureView();
   };
 
@@ -479,9 +488,11 @@ const Main = () => {
       }
       style={styles.container}
     >
-      <StatusBar style='dark' backgroundColor="white" />
+      <StatusBar style="dark" backgroundColor="white" />
       <View style={{ flex: 1, padding: 20 }}>
-        <Text style={styles.maintext}>Process Scheduler</Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <Text style={styles.maintext}>Process Scheduler</Text>
+        </View>
         <Text
           style={{
             fontSize: width / 26,
@@ -509,7 +520,7 @@ const Main = () => {
           ref={viewRef2}
         >
           {ganttData.map((process, index) => {
-            const width = (process.endTime - process.startTime) * 33; // Adjust scale as needed
+            const width = (process.endTime - process.startTime) * 33;
             return (
               <View key={index}>
                 <View
@@ -562,6 +573,7 @@ const Main = () => {
             setProcessessrr={setProcesses}
             setProcessesssrtf={setProcesses}
           />
+          <OptionModal visible={downlaodModal} onClose={toggleModalVisibility} onPress={handleGeneratePDF}/>
         </View>
 
         {tableData && (
@@ -588,11 +600,13 @@ const Main = () => {
                   justifyContent: "center",
                   alignItems: "center",
                 }}
-                onPress={handleGeneratePDF}
+                onPress={() => {
+                  setdownloadModal(true);
+                }}
               >
                 <LinearGradient
                   colors={["#ff0066", "#E3A14F"]}
-                  start={[0, 0]}
+                  start={[0, 0]} 
                   end={[1, 1]}
                   style={{
                     width: 35,
@@ -606,6 +620,7 @@ const Main = () => {
                 <Icon name="download" size={20} color={"white"} />
               </TouchableOpacity>
             </View>
+
 
             <View style={styles.table}>
               <View style={styles.tableRow}>
@@ -651,6 +666,7 @@ const Main = () => {
             marginBottom: height / 50,
           }}
         >
+
           <TouchableOpacity
             onPress={() => {
               setVisible(true);
@@ -776,8 +792,8 @@ const styles = StyleSheet.create({
     height: height / 13,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1.3,
-    borderColor: "rgba(0,0,0,0.25)",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,1)",
   },
   processtime: {
     height: height / 40,

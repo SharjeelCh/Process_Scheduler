@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { View, Text, Modal } from "react-native";
 import { Button, Portal, PaperProvider } from "react-native-paper";
 import { height, width } from "./Dimensions";
-import Icon from "react-native-vector-icons/FontAwesome5";
+import { FontAwesome5 } from "@expo/vector-icons";
 
 const DownloadModal = ({ showmodal, closemodal, setshowmodal, text }) => {
   useEffect(() => {
@@ -42,7 +42,7 @@ const DownloadModal = ({ showmodal, closemodal, setshowmodal, text }) => {
           }}
         >
           {text == "Image Saved to Gallery" && (
-            <Icon name="check-circle" size={12} color={"white"} />
+            <FontAwesome5 name="check-circle" size={12} color={"white"} />
           )}
 
           <Text

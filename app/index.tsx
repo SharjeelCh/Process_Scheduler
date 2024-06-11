@@ -17,7 +17,7 @@ export default function Home() {
 
   useEffect(() => {
     if (isLoaded) {
-      router.push("/Screens/Main");
+      router.replace("/Screens/Main");
     }
   }, [isLoaded]);
 
