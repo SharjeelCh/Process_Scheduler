@@ -12,7 +12,7 @@ import {
 import { height, width } from "./Dimensions";
 import { EvilIcons, FontAwesome } from "@expo/vector-icons";
 
-const OptionModal = ({ visible, onClose ,onPress}) => {
+const OptionModal = ({ visible, onClose ,onPress,onPresspdf}) => {
   return (
     <Modal transparent={true} visible={visible} animationType="fade">
       <StatusBar backgroundColor={"rgba(0, 0, 0, 0.3)"} />
@@ -30,7 +30,7 @@ const OptionModal = ({ visible, onClose ,onPress}) => {
                   <Text style={styles.text}>JPG</Text>
                 </View>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.imageContainer}>
+              <TouchableOpacity style={styles.imageContainer} onPress={onPresspdf}>
                 <FontAwesome
                   name="file-text"
                   size={width / 9.5}
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     width: width,
     flexDirection: "row",
-    height: height / 8,
+    height: height / 8.8,
     borderTopEndRadius: height / 30,
     borderTopLeftRadius: height / 30,
     justifyContent: "space-around",

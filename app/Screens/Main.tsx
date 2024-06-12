@@ -21,10 +21,15 @@ import { Line, Svg } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { MD3Colors } from "react-native-paper";
-
+import { printToFileAsync } from "expo-print";
+import { shareAsync } from "expo-sharing";
 import * as FileSystem from "expo-file-system";
 import RNFetchBlob from "rn-fetch-blob";
 import OptionModal from "../Components/OptionModal";
+import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import CustomDrawer from "../Components/CustomDrawer";
+import { Html } from "../Components/HTML";
+
 
 const Main = () => {
   const router = useRouter();
@@ -39,16 +44,23 @@ const Main = () => {
   const [timeQuantum, setTimeQuantum] = useState(0);
   const [showdownloadModal, setshowdownloadModal] = useState(false);
   const [showAlert, setshowAlert] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const [show, setShow] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const viewRef = useRef(null);
   const viewRef2 = useRef(null);
 
+  const html = Html({tableData},algorithm,{ganttData});
+
+  let letGeneratePdf = async () => {
+    const file = await printToFileAsync({ html, base64: false });
+    await shareAsync(file.uri);
+  };
+
   const toggleModalVisibility = () => {
     setdownloadModal(!downlaodModal);
   };
-
 
   const captureView = async () => {
     try {
@@ -426,6 +438,7 @@ const Main = () => {
         id: process.id,
         arrivalTime: process.arrivalTime,
         burstTime: process.burstTime,
+        priority:process.priority,
         waitingTime: waitingTimes[process.id],
         turnaroundTime: turnaroundTimes[process.id],
         responseTime: responseTimes[process.id],
@@ -490,8 +503,17 @@ const Main = () => {
     >
       <StatusBar style="dark" backgroundColor="white" />
       <View style={{ flex: 1, padding: 20 }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <Text style={styles.maintext}>Process Scheduler</Text>
+          <TouchableOpacity onPress={() => setIsDrawerOpen(!isDrawerOpen)}>
+            <MaterialIcons name={"settings"} size={30} color={"black"} />
+          </TouchableOpacity>
         </View>
         <Text
           style={{
@@ -502,6 +524,8 @@ const Main = () => {
         >
           {algorithm}
         </Text>
+        <CustomDrawer isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} />
+
         {ganttData.length > 0 && (
           <Text
             style={{
@@ -573,7 +597,12 @@ const Main = () => {
             setProcessessrr={setProcesses}
             setProcessesssrtf={setProcesses}
           />
-          <OptionModal visible={downlaodModal} onClose={toggleModalVisibility} onPress={handleGeneratePDF}/>
+          <OptionModal
+            visible={downlaodModal}
+            onClose={toggleModalVisibility}
+            onPress={handleGeneratePDF}
+            onPresspdf={letGeneratePdf}
+          />
         </View>
 
         {tableData && (
@@ -606,7 +635,7 @@ const Main = () => {
               >
                 <LinearGradient
                   colors={["#ff0066", "#E3A14F"]}
-                  start={[0, 0]} 
+                  start={[0, 0]}
                   end={[1, 1]}
                   style={{
                     width: 35,
@@ -621,20 +650,18 @@ const Main = () => {
               </TouchableOpacity>
             </View>
 
-
             <View style={styles.table}>
               <View style={styles.tableRow}>
                 <Text style={styles.tableCell}>Process ID</Text>
                 <Text style={styles.tableCell}>Arrival Time</Text>
                 <Text style={styles.tableCell}>Burst Time</Text>
                 <Text style={styles.tableCell}>Priority</Text>
-
                 <Text style={styles.tableCell}>Waiting Time</Text>
                 <Text style={styles.tableCell}>Turnaround Time</Text>
               </View>
               {tableData.processes.map((process) => (
                 <View style={styles.tableRow} key={process.id}>
-                  <Text style={styles.tableCell}>{process.id}</Text>
+                  <Text style={styles.tableCell}>P{process.id}</Text>
                   <Text style={styles.tableCell}>{process.arrivalTime}</Text>
                   <Text style={styles.tableCell}>{process.burstTime}</Text>
                   <Text style={styles.tableCell}>{process.priority}</Text>
@@ -651,7 +678,7 @@ const Main = () => {
               <View style={styles.tableRow}>
                 <Text style={styles.tableCell}>Avg Turnaround Time:</Text>
                 <Text style={styles.tableCell}>
-                  {tableData.totalTurnaroundTime}
+                  {tableData.totalTurnaroundTime.toFixed(2)}
                 </Text>
               </View>
             </View>
@@ -666,7 +693,6 @@ const Main = () => {
             marginBottom: height / 50,
           }}
         >
-
           <TouchableOpacity
             onPress={() => {
               setVisible(true);
@@ -674,7 +700,7 @@ const Main = () => {
             style={styles.algoButton}
           >
             <LinearGradient
-              colors={["#ACA5D0", "#5140B3"]} // Define your gradient colors here
+              colors={["#ACA5D0", "#5140B3"]}
               start={[0, 0]}
               end={[1, 1]}
               style={styles.gradient}
