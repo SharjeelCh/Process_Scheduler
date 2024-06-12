@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -29,7 +29,9 @@ import OptionModal from "../Components/OptionModal";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import CustomDrawer from "../Components/CustomDrawer";
 import { Html } from "../Components/HTML";
-
+import { getThemeMode } from "../Components/Async";
+import ThemeContext from "../Components/ThemeContext";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Main = () => {
   const router = useRouter();
@@ -50,8 +52,12 @@ const Main = () => {
   const [refreshing, setRefreshing] = useState(false);
   const viewRef = useRef(null);
   const viewRef2 = useRef(null);
+  const context = useContext(ThemeContext);
+  const {mode, toggleThemeMode} = context
 
-  const html = Html({tableData},algorithm,{ganttData});
+ 
+
+  const html = Html({ tableData }, algorithm, { ganttData });
 
   let letGeneratePdf = async () => {
     const file = await printToFileAsync({ html, base64: false });
@@ -438,7 +444,7 @@ const Main = () => {
         id: process.id,
         arrivalTime: process.arrivalTime,
         burstTime: process.burstTime,
-        priority:process.priority,
+        priority: process.priority,
         waitingTime: waitingTimes[process.id],
         turnaroundTime: turnaroundTimes[process.id],
         responseTime: responseTimes[process.id],
@@ -493,16 +499,25 @@ const Main = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1}}>
     <ScrollView
       scrollEnabled={false}
-      contentContainerStyle={{ justifyContent: "center", flex: 1 }}
+      contentContainerStyle={{ justifyContent: "center", flex: 1, }}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
-      style={styles.container}
+      style={[
+        styles.container,
+        { backgroundColor: mode ? "rgba(0,0,0,0.7)" : "white" },
+      ]}
     >
-      <StatusBar style="dark" backgroundColor="white" />
-      <View style={{ flex: 1, padding: 20 }}>
+      <CustomDrawer isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} />
+
+      <StatusBar
+        style={mode ? "light" : "dark"}
+        backgroundColor={mode ? "rgba(0,0,0,0.7)" : "white"}
+      />
+      <View style={{ flex: 1, padding: 20, opacity: isDrawerOpen ? 0.45 : 1 }}>
         <View
           style={{
             flexDirection: "row",
@@ -510,9 +525,15 @@ const Main = () => {
             alignItems: "center",
           }}
         >
-          <Text style={styles.maintext}>Process Scheduler</Text>
+          <Text style={[styles.maintext, { color: mode ? "white" : "black" }]}>
+            Process Scheduler
+          </Text>
           <TouchableOpacity onPress={() => setIsDrawerOpen(!isDrawerOpen)}>
-            <MaterialIcons name={"settings"} size={30} color={"black"} />
+            <MaterialIcons
+              name={"settings"}
+              size={30}
+              color={mode ? "white" : "black"}
+            />
           </TouchableOpacity>
         </View>
         <Text
@@ -520,11 +541,11 @@ const Main = () => {
             fontSize: width / 26,
             marginVertical: width / 40,
             fontStyle: "italic",
+            color: mode ? "white" : "black",
           }}
         >
           {algorithm}
         </Text>
-        <CustomDrawer isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} />
 
         {ganttData.length > 0 && (
           <Text
@@ -532,6 +553,7 @@ const Main = () => {
               fontSize: width / 22,
               fontWeight: "bold",
               fontStyle: "italic",
+              color: mode ? "white" : "black",
             }}
           >
             Gantt Chart
@@ -551,6 +573,7 @@ const Main = () => {
                   style={{
                     ...styles.process,
                     width: width,
+                    borderColor: mode ? "white" : "black",
                     backgroundColor:
                       process.id === "wait"
                         ? "#ccc"
@@ -560,21 +583,30 @@ const Main = () => {
                   {process.id === "wait" && (
                     <DiagonalLines width={width} height={height / 14} />
                   )}
-                  <Text style={styles.processText}>
+                  <Text style={[styles.processText]}>
                     {process.id === "wait" ? "Wait" : `P${process.id}`}
                   </Text>
                 </View>
                 <View
                   style={{
                     ...styles.processtime,
+                    borderColor: mode ? "white" : "black",
                     width: width,
                   }}
                 >
-                  <Text style={styles.processText2}>
+                  <Text
+                    style={[
+                      styles.processText2,
+                      { color: mode ? "white" : "black" },
+                    ]}
+                  >
                     {`${process.startTime}`}
                   </Text>
                   <Text
-                    style={styles.processText2}
+                    style={[
+                      styles.processText2,
+                      { color: mode ? "white" : "black" },
+                    ]}
                   >{`${process.endTime}`}</Text>
                 </View>
               </View>
@@ -619,13 +651,22 @@ const Main = () => {
                 marginBottom: height / 40,
               }}
             >
-              <Text style={styles.tableHeader}>Process Table</Text>
+              <Text
+                style={[
+                  styles.tableHeader,
+                  { color: mode ? "white" : "black" },
+                ]}
+              >
+                Process Table
+              </Text>
               <TouchableOpacity
                 style={{
                   width: 35,
                   height: 35,
                   borderRadius: 100,
-                  backgroundColor: "rgba(255, 0, 0, 0.7)",
+                  backgroundColor: mode
+                    ? "rgba(255, 0, 0, 0.7)"
+                    : "rgba(0,0,0,0.7)",
                   justifyContent: "center",
                   alignItems: "center",
                 }}
@@ -650,34 +691,174 @@ const Main = () => {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.table}>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCell}>Process ID</Text>
-                <Text style={styles.tableCell}>Arrival Time</Text>
-                <Text style={styles.tableCell}>Burst Time</Text>
-                <Text style={styles.tableCell}>Priority</Text>
-                <Text style={styles.tableCell}>Waiting Time</Text>
-                <Text style={styles.tableCell}>Turnaround Time</Text>
+            <View
+              style={[
+                styles.table,
+                {
+                  backgroundColor: mode ? "white" : "rgba(0,0,0,0.7)",
+                  borderColor: mode ? "white" : "#ccc",
+                },
+              ]}
+            >
+              <View
+                style={[
+                  styles.tableRow,
+                  { backgroundColor: mode ? "rgba(0,0,0,0.7)" : "white" },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.tableCell,
+                    {
+                      color: mode ? "white" : "black",
+                      borderColor: mode ? "white" : "#ccc",
+                    },
+                  ]}
+                >
+                  Process ID
+                </Text>
+                <Text
+                  style={[
+                    styles.tableCell,
+                    { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc" },
+                  ]}
+                >
+                  Arrival Time
+                </Text>
+                <Text
+                  style={[
+                    styles.tableCell,
+                    { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc", },
+                  ]}
+                >
+                  Burst Time
+                </Text>
+                <Text
+                  style={[
+                    styles.tableCell,
+                    { color: mode ? "white" : "black" , borderColor: mode ? "white" : "#ccc",},
+                  ]}
+                >
+                  Priority
+                </Text>
+                <Text
+                  style={[
+                    styles.tableCell,
+                    { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc", },
+                  ]}
+                >
+                  Waiting Time
+                </Text>
+                <Text
+                  style={[
+                    styles.tableCell,
+                    { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc", },
+                  ]}
+                >
+                  Turnaround Time
+                </Text>
               </View>
               {tableData.processes.map((process) => (
-                <View style={styles.tableRow} key={process.id}>
-                  <Text style={styles.tableCell}>P{process.id}</Text>
-                  <Text style={styles.tableCell}>{process.arrivalTime}</Text>
-                  <Text style={styles.tableCell}>{process.burstTime}</Text>
-                  <Text style={styles.tableCell}>{process.priority}</Text>
-                  <Text style={styles.tableCell}>{process.waitingTime}</Text>
-                  <Text style={styles.tableCell}>{process.turnaroundTime}</Text>
+                <View
+                  style={[
+                    styles.tableRow,
+                    { backgroundColor: mode ? "rgba(0,0,0,0.7)" : "white" },
+                  ]}
+                  key={process.id}
+                >
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc", },
+                    ]}
+                  >
+                    P{process.id}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc", },
+                    ]}
+                  >
+                    {process.arrivalTime}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      { color: mode ? "white" : "black" , borderColor: mode ? "white" : "#ccc",},
+                    ]}
+                  >
+                    {process.burstTime}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc", },
+                    ]}
+                  >
+                    {process.priority}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc", },
+                    ]}
+                  >
+                    {process.waitingTime}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      { color: mode ? "white" : "black" , borderColor: mode ? "white" : "#ccc",},
+                    ]}
+                  >
+                    {process.turnaroundTime}
+                  </Text>
                 </View>
               ))}
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCell}>Average Waiting Time:</Text>
-                <Text style={styles.tableCell}>
+              <View
+                style={[
+                  styles.tableRow,
+                  { backgroundColor: mode ? "rgba(0,0,0,0.7)" : "white" },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.tableCell,
+                    { color: mode ? "white" : "black" , borderColor: mode ? "white" : "#ccc",},
+                  ]}
+                >
+                  Average Waiting Time:
+                </Text>
+                <Text
+                  style={[
+                    styles.tableCell,
+                    { color: mode ? "white" : "black" , borderColor: mode ? "white" : "#ccc",},
+                  ]}
+                >
                   {tableData.avgWaitingTime.toFixed(2)}
                 </Text>
               </View>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCell}>Avg Turnaround Time:</Text>
-                <Text style={styles.tableCell}>
+              <View
+                style={[
+                  styles.tableRow,
+                  { backgroundColor: mode ? "rgba(0,0,0,0.7)" : "white" },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.tableCell,
+                    { color: mode ? "white" : "black" , borderColor: mode ? "white" : "#ccc",},
+                  ]}
+                >
+                  Avg Turnaround Time:
+                </Text>
+                <Text
+                  style={[
+                    styles.tableCell,
+                    { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc", },
+                  ]}
+                >
                   {tableData.totalTurnaroundTime.toFixed(2)}
                 </Text>
               </View>
@@ -719,7 +900,7 @@ const Main = () => {
           {show ? (
             <ActivityIndicator
               animating={show}
-              color="red"
+              color={mode?'white' :'red'}
               style={{
                 justifyContent: "center",
                 alignItems: "center",
@@ -767,6 +948,7 @@ const Main = () => {
         </View>
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -805,7 +987,6 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: "white",
     overflow: "hidden",
     position: "relative",
   },
@@ -819,7 +1000,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,1)",
   },
   processtime: {
     height: height / 40,
@@ -830,8 +1010,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderLeftWidth: 1,
     borderRightWidth: 1,
-    borderLeftColor: "rgba(0,0,0,1)",
-    borderBottomColor: "rgba(0,0,0,1)",
+
     marginTop: height * 0.003,
   },
   processText: {
@@ -839,7 +1018,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   processText2: {
-    color: "black",
     fontWeight: "500",
     fontSize: width / 30,
   },
@@ -847,7 +1025,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     width: "100%",
     height: height / 2.5,
-    backgroundColor: "white",
     marginBottom: height / 20,
   },
 
@@ -858,7 +1035,6 @@ const styles = StyleSheet.create({
   },
   table: {
     borderWidth: 1,
-    borderColor: "#ccc",
   },
   tableRow: {
     flexDirection: "row",
@@ -867,7 +1043,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     borderWidth: 1,
-    borderColor: "#ccc",
     textAlign: "center",
   },
 });

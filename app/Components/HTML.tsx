@@ -7,7 +7,6 @@ export const Html = (
       return "Loading...";
     }
   
-    // Find the total duration to properly scale the Gantt chart
     const totalDuration = Math.max(
       ...ganttData.map((process) => process.endTime)
     );

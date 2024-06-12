@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Text, View, Button } from "react-native";
+import { View } from "react-native";
 import { useRouter } from "expo-router";
 import AnimatedSplash from "react-native-animated-splash-screen";
-import Main from "./Screens/Main";
 import { StatusBar } from "expo-status-bar";
 
 export default function Home() {
@@ -22,7 +21,7 @@ export default function Home() {
   }, [isLoaded]);
 
   return (
-    <View style={{flex:1}}>
+    <View style={{ flex: 1 }}>
       <StatusBar
         translucent={true}
         backgroundColor="rgba(173, 216, 230, 0.8)"
@@ -34,7 +33,7 @@ export default function Home() {
         backgroundColor={"rgba(173, 216, 230, 0.8)"}
         logoHeight={100}
         logoWidth={100}
-      ></AnimatedSplash>
+      />
     </View>
   );
 }
