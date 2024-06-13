@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { saveThemeMode, getThemeMode } from '../Components/Async'; // Adjust the import path as necessary
+import { saveThemeMode, getThemeMode } from '../Components/Async'; 
 
 interface ThemeContextType {
   mode: boolean;

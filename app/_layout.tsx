@@ -1,6 +1,5 @@
-// _layout.js
 import React from 'react';
-import { ThemeProvider } from './Components/ThemeContext'; // Adjust the import path as necessary
+import { ThemeProvider } from './Components/ThemeContext';
 import { Stack } from 'expo-router';
 
 const RootLayout = () => {

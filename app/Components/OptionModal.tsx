@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   Modal,
   StyleSheet,
@@ -11,30 +11,43 @@ import {
 } from "react-native";
 import { height, width } from "./Dimensions";
 import { EvilIcons, FontAwesome } from "@expo/vector-icons";
+import ThemeContext from "./ThemeContext";
 
-const OptionModal = ({ visible, onClose ,onPress,onPresspdf}) => {
+const OptionModal = ({ visible, onClose, onPress, onPresspdf }) => {
+  const context = useContext(ThemeContext);
+  const { mode, toggleThemeMode } = context;
   return (
     <Modal transparent={true} visible={visible} animationType="fade">
-      <StatusBar backgroundColor={"rgba(0, 0, 0, 0.3)"} />
+      <StatusBar
+        backgroundColor={mode ? "rgba(0, 0, 0, 0.8)" : "rgba(0, 0, 0, 0.3)"}
+      />
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
           <TouchableWithoutFeedback>
-            <View style={styles.container}>
+            <View
+              style={[
+                styles.container,
+                { backgroundColor: mode ? "rgba(128,128,128,1)" : "white" },
+              ]}
+            >
               <TouchableOpacity style={styles.imageContainer} onPress={onPress}>
                 <FontAwesome
                   name="file-image-o"
                   size={width / 9.5}
-                  color={"rgba(255,0,0,0.65)"}
+                  color={mode ? "rgba(255,255,0,1)" : "rgba(255,0,0,0.65)"}
                 />
                 <View style={styles.label}>
                   <Text style={styles.text}>JPG</Text>
                 </View>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.imageContainer} onPress={onPresspdf}>
+              <TouchableOpacity
+                style={styles.imageContainer}
+                onPress={onPresspdf}
+              >
                 <FontAwesome
                   name="file-text"
                   size={width / 9.5}
-                  color={"rgba(0,0,255,0.45)"}
+                  color={mode ? "rgba(173, 216, 230, 1)" : "rgba(0,0,255,0.45)"}
                 />
                 <View style={styles.label}>
                   <Text style={styles.text}>PDF</Text>
@@ -58,7 +71,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   container: {
-    backgroundColor: "white",
     width: width,
     flexDirection: "row",
     height: height / 8.8,
