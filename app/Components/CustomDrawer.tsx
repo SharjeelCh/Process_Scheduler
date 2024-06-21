@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { getThemeMode, saveThemeMode } from "../Components/Async";
 import ThemeContext from "./ThemeContext";
+import { useRouter } from "expo-router";
 
 export default function CustomDrawer({ isOpen, setIsOpen }) {
   const { width, height } = Dimensions.get("window");
@@ -18,6 +19,7 @@ export default function CustomDrawer({ isOpen, setIsOpen }) {
   const drawerHeight = height / 5;
   const context=useContext(ThemeContext)
   const {mode,toggleThemeMode}= context;
+  const router=useRouter();
   
 
   useEffect(() => {
@@ -76,7 +78,9 @@ export default function CustomDrawer({ isOpen, setIsOpen }) {
           color={mode ? "white" : "black"}
         />
       </TouchableOpacity>
-      <TouchableOpacity>
+      <TouchableOpacity
+      onPress={()=>{router.navigate("/Screens/About")}}
+      >
         <MaterialIcons
           name="info"
           size={width / 12}
