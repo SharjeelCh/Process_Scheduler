@@ -1,4 +1,10 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   View,
   Text,
@@ -53,9 +59,7 @@ const Main = () => {
   const viewRef = useRef(null);
   const viewRef2 = useRef(null);
   const context = useContext(ThemeContext);
-  const {mode, toggleThemeMode} = context
-
- 
+  const { mode, toggleThemeMode } = context;
 
   const html = Html({ tableData }, algorithm, { ganttData });
 
@@ -130,6 +134,28 @@ const Main = () => {
         .filter((entry) => entry.id === process.id)
         .pop().endTime;
       turnaroundTimes[process.id] = endTime - process.arrivalTime;
+    });
+    return turnaroundTimes;
+  };
+
+  const calculateWaitingTimeSJF = (processes, ganttChart) => {
+    let waitingTimes = {};
+    processes.forEach((process) => {
+      let endTime = ganttChart
+        .filter((entry) => entry.id === process.id)
+        .pop().endTime;
+      waitingTimes[process.id] = endTime - process.burstTime;
+    });
+    return waitingTimes;
+  };
+
+  const calculateTurnaroundSJF = (processes, ganttChart) => {
+    let turnaroundTimes = {};
+    processes.forEach((process) => {
+      let endTime = ganttChart
+        .filter((entry) => entry.id === process.id)
+        .pop().endTime;
+      turnaroundTimes[process.id] = endTime
     });
     return turnaroundTimes;
   };
@@ -428,35 +454,67 @@ const Main = () => {
 
       setGanttData(ganttChart);
 
-      const waitingTimes = calculateWaitingTime(processes, ganttChart);
-      const turnaroundTimes = calculateTurnaroundTime(processes, ganttChart);
-      const responseTimes = calculateResponseTime(processes, ganttChart);
-      const totalWaitingTime = Object.values(waitingTimes).reduce(
-        (acc, time) => acc + time,
-        0
-      );
-      const avgWaitingTime = totalWaitingTime / processes.length;
-      const totalTurnaroundTime =
-        Object.values(turnaroundTimes).reduce((acc, time) => acc + time, 0) /
-        processes.length;
+      if (algorithm === "Shortest Job First (SJF)") {
+        const waitingTimes = calculateWaitingTimeSJF(processes, ganttChart);
+        const turnaroundTimes = calculateTurnaroundSJF(processes, ganttChart);
+        const responseTimes = calculateResponseTime(processes, ganttChart);
+        const totalWaitingTime = Object.values(waitingTimes).reduce(
+          (acc, time) => acc + time,
+          0
+        );
+        const avgWaitingTime = totalWaitingTime / processes.length;
+        const totalTurnaroundTime =
+          Object.values(turnaroundTimes).reduce((acc, time) => acc + time, 0) /
+          processes.length;
 
-      const tableData = processes.map((process) => ({
-        id: process.id,
-        arrivalTime: process.arrivalTime,
-        burstTime: process.burstTime,
-        priority: process.priority,
-        waitingTime: waitingTimes[process.id],
-        turnaroundTime: turnaroundTimes[process.id],
-        responseTime: responseTimes[process.id],
-      }));
+        const tableData = processes.map((process) => ({
+          id: process.id,
+          arrivalTime: process.arrivalTime,
+          burstTime: process.burstTime,
+          priority: process.priority,
+          waitingTime: waitingTimes[process.id],
+          turnaroundTime: turnaroundTimes[process.id],
+          responseTime: responseTimes[process.id],
+        }));
 
-      setTableData({
-        processes: tableData,
-        avgWaitingTime,
-        totalTurnaroundTime,
-      });
+        setTableData({
+          processes: tableData,
+          avgWaitingTime,
+          totalTurnaroundTime,
+        });
 
-      setShow(false);
+        setShow(false);
+      } else {
+        const waitingTimes = calculateWaitingTime(processes, ganttChart);
+        const turnaroundTimes = calculateTurnaroundTime(processes, ganttChart);
+        const responseTimes = calculateResponseTime(processes, ganttChart);
+        const totalWaitingTime = Object.values(waitingTimes).reduce(
+          (acc, time) => acc + time,
+          0
+        );
+        const avgWaitingTime = totalWaitingTime / processes.length;
+        const totalTurnaroundTime =
+          Object.values(turnaroundTimes).reduce((acc, time) => acc + time, 0) /
+          processes.length;
+
+        const tableData = processes.map((process) => ({
+          id: process.id,
+          arrivalTime: process.arrivalTime,
+          burstTime: process.burstTime,
+          priority: process.priority,
+          waitingTime: waitingTimes[process.id],
+          turnaroundTime: turnaroundTimes[process.id],
+          responseTime: responseTimes[process.id],
+        }));
+
+        setTableData({
+          processes: tableData,
+          avgWaitingTime,
+          totalTurnaroundTime,
+        });
+
+        setShow(false);
+      }
     } else {
       await delay(950);
       setshowAlert(true);
@@ -499,423 +557,438 @@ const Main = () => {
   };
 
   return (
-    <SafeAreaView style={{flex:1}}>
-    <ScrollView
-      scrollEnabled={false}
-      contentContainerStyle={{ justifyContent: "center", flex: 1, }}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-      style={[
-        styles.container,
-        { backgroundColor: mode ? "rgba(0,0,0,0.7)" : "white" },
-      ]}
-    >
-      <CustomDrawer isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} />
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView
+        scrollEnabled={false}
+        contentContainerStyle={{ justifyContent: "center", flex: 1 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        style={[
+          styles.container,
+          { backgroundColor: mode ? "rgba(0,0,0,0.7)" : "white" },
+        ]}
+      >
+        <CustomDrawer isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} />
 
-      <StatusBar
-        style={mode ? "light" : "dark"}
-        backgroundColor={mode ? "rgba(0,0,0,0.7)" : "white"}
-      />
-      <View style={{ flex: 1, padding: 20, opacity: isDrawerOpen ? 0.45 : 1 }}>
+        <StatusBar
+          style={mode ? "light" : "dark"}
+          backgroundColor={mode ? "rgba(0,0,0,0.7)" : "white"}
+        />
         <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
+          style={{ flex: 1, padding: 20, opacity: isDrawerOpen ? 0.45 : 1 }}
         >
-          <Text style={[styles.maintext, { color: mode ? "white" : "black" }]}>
-            Process Scheduler
-          </Text>
-          <TouchableOpacity onPress={() => setIsDrawerOpen(!isDrawerOpen)}>
-            <MaterialIcons
-              name={"settings"}
-              size={30}
-              color={mode ? "white" : "black"}
-            />
-          </TouchableOpacity>
-        </View>
-        <Text
-          style={{
-            fontSize: width / 26,
-            marginVertical: width / 40,
-            fontStyle: "italic",
-            color: mode ? "white" : "black",
-          }}
-        >
-          {algorithm}
-        </Text>
-
-        {ganttData.length > 0 && (
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={[styles.maintext, { color: mode ? "white" : "black" }]}
+            >
+              Process Scheduler
+            </Text>
+            <TouchableOpacity onPress={() => setIsDrawerOpen(!isDrawerOpen)}>
+              <MaterialIcons
+                name={"settings"}
+                size={30}
+                color={mode ? "white" : "black"}
+              />
+            </TouchableOpacity>
+          </View>
           <Text
             style={{
-              fontSize: width / 22,
-              fontWeight: "bold",
+              fontSize: width / 26,
+              marginVertical: width / 40,
               fontStyle: "italic",
               color: mode ? "white" : "black",
             }}
           >
-            Gantt Chart
+            {algorithm}
           </Text>
-        )}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.ganttContainer}
-          ref={viewRef2}
-        >
-          {ganttData.map((process, index) => {
-            const width = (process.endTime - process.startTime) * 33;
-            return (
-              <View key={index}>
-                <View
-                  style={{
-                    ...styles.process,
-                    width: width,
-                    borderColor: mode ? "white" : "black",
-                    backgroundColor:
-                      process.id === "wait"
-                        ? "#ccc"
-                        : `hsl(${process.id * 50}, 80%, 50%)`,
-                  }}
-                >
-                  {process.id === "wait" && (
-                    <DiagonalLines width={width} height={height / 14} />
-                  )}
-                  <Text style={[styles.processText]}>
-                    {process.id === "wait" ? "Wait" : `P${process.id}`}
-                  </Text>
-                </View>
-                <View
-                  style={{
-                    ...styles.processtime,
-                    borderColor: mode ? "white" : "black",
-                    width: width,
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.processText2,
-                      { color: mode ? "white" : "black" },
-                    ]}
-                  >
-                    {`${process.startTime}`}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.processText2,
-                      { color: mode ? "white" : "black" },
-                    ]}
-                  >{`${process.endTime}`}</Text>
-                </View>
-              </View>
-            );
-          })}
-        </ScrollView>
-        <View>
-          <SelectionModal
-            visible={visible}
-            value={algorithm}
-            setCustom={setCustom}
-            onValueChange={handleValueChange}
-            onClose={handleModalClose}
-            custom={custom}
-            setProcesses={setProcesses}
-            setProcessessjf={setProcesses}
-            setProcessessps={setProcesses}
-            setProcessesssrr={setProcesses}
-            settimequantumssrr={setTimeQuantum}
-            setProcessessrr={setProcesses}
-            setProcessesssrtf={setProcesses}
-          />
-          <OptionModal
-            visible={downlaodModal}
-            onClose={toggleModalVisibility}
-            onPress={handleGeneratePDF}
-            onPresspdf={letGeneratePdf}
-          />
-        </View>
 
-        {tableData && (
-          <ScrollView
-            ref={viewRef}
-            style={styles.tableContainer}
-            showsVerticalScrollIndicator={false}
-          >
-            <View
+          {ganttData.length > 0 && (
+            <Text
               style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "flex-end",
-                marginBottom: height / 40,
+                fontSize: width / 22,
+                fontWeight: "bold",
+                fontStyle: "italic",
+                color: mode ? "white" : "black",
               }}
             >
-              <Text
-                style={[
-                  styles.tableHeader,
-                  { color: mode ? "white" : "black" },
-                ]}
-              >
-                Process Table
-              </Text>
-              <TouchableOpacity
+              Gantt Chart
+            </Text>
+          )}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.ganttContainer}
+            ref={viewRef2}
+          >
+            {ganttData.map((process, index) => {
+              const width = (process.endTime - process.startTime) * 33;
+              return (
+                <View key={index}>
+                  <View
+                    style={{
+                      ...styles.process,
+                      width: width,
+                      borderColor: mode ? "white" : "black",
+                      backgroundColor:
+                        process.id === "wait"
+                          ? "#ccc"
+                          : `hsl(${process.id * 50}, 80%, 50%)`,
+                    }}
+                  >
+                    {process.id === "wait" && (
+                      <DiagonalLines width={width} height={height / 14} />
+                    )}
+                    <Text style={[styles.processText]}>
+                      {process.id === "wait" ? "Wait" : `P${process.id}`}
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      ...styles.processtime,
+                      borderColor: mode ? "white" : "black",
+                      width: width,
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.processText2,
+                        { color: mode ? "white" : "black" },
+                      ]}
+                    >
+                      {`${process.startTime}`}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.processText2,
+                        { color: mode ? "white" : "black" },
+                      ]}
+                    >{`${process.endTime}`}</Text>
+                  </View>
+                </View>
+              );
+            })}
+          </ScrollView>
+          <View>
+            <SelectionModal
+              visible={visible}
+              value={algorithm}
+              setCustom={setCustom}
+              onValueChange={handleValueChange}
+              onClose={handleModalClose}
+              custom={custom}
+              setProcesses={setProcesses}
+              setProcessessjf={setProcesses}
+              setProcessessps={setProcesses}
+              setProcessesssrr={setProcesses}
+              settimequantumssrr={setTimeQuantum}
+              setProcessessrr={setProcesses}
+              setProcessesssrtf={setProcesses}
+            />
+            <OptionModal
+              visible={downlaodModal}
+              onClose={toggleModalVisibility}
+              onPress={handleGeneratePDF}
+              onPresspdf={letGeneratePdf}
+            />
+          </View>
+
+          {tableData && (
+            <ScrollView
+              ref={viewRef}
+              style={styles.tableContainer}
+              showsVerticalScrollIndicator={false}
+            >
+              <View
                 style={{
-                  width: 35,
-                  height: 35,
-                  borderRadius: 100,
-                  backgroundColor: mode
-                    ? "rgba(255, 0, 0, 0.7)"
-                    : "rgba(0,0,0,0.7)",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-                onPress={() => {
-                  setdownloadModal(true);
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "flex-end",
+                  marginBottom: height / 40,
                 }}
               >
-                <LinearGradient
-                  colors={["#ff0066", "#E3A14F"]}
-                  start={[0, 0]}
-                  end={[1, 1]}
+                <Text
+                  style={[
+                    styles.tableHeader,
+                    { color: mode ? "white" : "black" },
+                  ]}
+                >
+                  Process Table
+                </Text>
+                <TouchableOpacity
                   style={{
                     width: 35,
                     height: 35,
                     borderRadius: 100,
+                    backgroundColor: mode
+                      ? "rgba(255, 0, 0, 0.7)"
+                      : "rgba(0,0,0,0.7)",
                     justifyContent: "center",
                     alignItems: "center",
-                    position: "absolute",
                   }}
-                />
-                <Icon name="download" size={20} color={"white"} />
-              </TouchableOpacity>
-            </View>
+                  onPress={() => {
+                    setdownloadModal(true);
+                  }}
+                >
+                  <LinearGradient
+                    colors={["#ff0066", "#E3A14F"]}
+                    start={[0, 0]}
+                    end={[1, 1]}
+                    style={{
+                      width: 35,
+                      height: 35,
+                      borderRadius: 100,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      position: "absolute",
+                    }}
+                  />
+                  <Icon name="download" size={20} color={"white"} />
+                </TouchableOpacity>
+              </View>
 
-            <View
-              style={[
-                styles.table,
-                {
-                  backgroundColor: mode ? "white" : "rgba(0,0,0,0.7)",
-                  borderColor: mode ? "white" : "#ccc",
-                },
-              ]}
-            >
               <View
                 style={[
-                  styles.tableRow,
-                  { backgroundColor: mode ? "rgba(0,0,0,0.7)" : "white" },
+                  styles.table,
+                  {
+                    backgroundColor: mode ? "white" : "rgba(0,0,0,0.7)",
+                    borderColor: mode ? "white" : "#ccc",
+                  },
                 ]}
               >
-                <Text
-                  style={[
-                    styles.tableCell,
-                    {
-                      color: mode ? "white" : "black",
-                      borderColor: mode ? "white" : "#ccc",
-                    },
-                  ]}
-                >
-                  Process ID
-                </Text>
-                <Text
-                  style={[
-                    styles.tableCell,
-                    { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc" },
-                  ]}
-                >
-                  Arrival Time
-                </Text>
-                <Text
-                  style={[
-                    styles.tableCell,
-                    { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc", },
-                  ]}
-                >
-                  Burst Time
-                </Text>
-                <Text
-                  style={[
-                    styles.tableCell,
-                    { color: mode ? "white" : "black" , borderColor: mode ? "white" : "#ccc",},
-                  ]}
-                >
-                  Priority
-                </Text>
-                <Text
-                  style={[
-                    styles.tableCell,
-                    { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc", },
-                  ]}
-                >
-                  Waiting Time
-                </Text>
-                <Text
-                  style={[
-                    styles.tableCell,
-                    { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc", },
-                  ]}
-                >
-                  Turnaround Time
-                </Text>
-              </View>
-              {tableData.processes.map((process) => (
                 <View
                   style={[
                     styles.tableRow,
                     { backgroundColor: mode ? "rgba(0,0,0,0.7)" : "white" },
                   ]}
-                  key={process.id}
                 >
                   <Text
                     style={[
                       styles.tableCell,
-                      { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc", },
+                      {
+                        color: mode ? "white" : "black",
+                        borderColor: mode ? "white" : "#ccc",
+                      },
                     ]}
                   >
-                    P{process.id}
+                    Process ID
                   </Text>
                   <Text
                     style={[
                       styles.tableCell,
-                      { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc", },
+                      {
+                        color: mode ? "white" : "black",
+                        borderColor: mode ? "white" : "#ccc",
+                      },
                     ]}
                   >
-                    {process.arrivalTime}
+                    Arrival Time
                   </Text>
                   <Text
                     style={[
                       styles.tableCell,
-                      { color: mode ? "white" : "black" , borderColor: mode ? "white" : "#ccc",},
+                      {
+                        color: mode ? "white" : "black",
+                        borderColor: mode ? "white" : "#ccc",
+                      },
                     ]}
                   >
-                    {process.burstTime}
+                    Burst Time
                   </Text>
                   <Text
                     style={[
                       styles.tableCell,
-                      { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc", },
+                      {
+                        color: mode ? "white" : "black",
+                        borderColor: mode ? "white" : "#ccc",
+                      },
                     ]}
                   >
-                    {process.priority}
+                    Priority
                   </Text>
                   <Text
                     style={[
                       styles.tableCell,
-                      { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc", },
+                      {
+                        color: mode ? "white" : "black",
+                        borderColor: mode ? "white" : "#ccc",
+                      },
                     ]}
                   >
-                    {process.waitingTime}
+                    Waiting Time
                   </Text>
                   <Text
                     style={[
                       styles.tableCell,
-                      { color: mode ? "white" : "black" , borderColor: mode ? "white" : "#ccc",},
+                      {
+                        color: mode ? "white" : "black",
+                        borderColor: mode ? "white" : "#ccc",
+                      },
                     ]}
                   >
-                    {process.turnaroundTime}
+                    Turnaround Time
                   </Text>
                 </View>
-              ))}
-              <View
-                style={[
-                  styles.tableRow,
-                  { backgroundColor: mode ? "rgba(0,0,0,0.7)" : "white" },
-                ]}
-              >
-                <Text
+                {tableData.processes.map((process) => (
+                  <View
+                    style={[
+                      styles.tableRow,
+                      { backgroundColor: mode ? "rgba(0,0,0,0.7)" : "white" },
+                    ]}
+                    key={process.id}
+                  >
+                    <Text
+                      style={[
+                        styles.tableCell,
+                        {
+                          color: mode ? "white" : "black",
+                          borderColor: mode ? "white" : "#ccc",
+                        },
+                      ]}
+                    >
+                      P{process.id}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.tableCell,
+                        {
+                          color: mode ? "white" : "black",
+                          borderColor: mode ? "white" : "#ccc",
+                        },
+                      ]}
+                    >
+                      {process.arrivalTime}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.tableCell,
+                        {
+                          color: mode ? "white" : "black",
+                          borderColor: mode ? "white" : "#ccc",
+                        },
+                      ]}
+                    >
+                      {process.burstTime}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.tableCell,
+                        {
+                          color: mode ? "white" : "black",
+                          borderColor: mode ? "white" : "#ccc",
+                        },
+                      ]}
+                    >
+                      {process.priority}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.tableCell,
+                        {
+                          color: mode ? "white" : "black",
+                          borderColor: mode ? "white" : "#ccc",
+                        },
+                      ]}
+                    >
+                      {process.waitingTime}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.tableCell,
+                        {
+                          color: mode ? "white" : "black",
+                          borderColor: mode ? "white" : "#ccc",
+                        },
+                      ]}
+                    >
+                      {process.turnaroundTime}
+                    </Text>
+                  </View>
+                ))}
+                <View
                   style={[
-                    styles.tableCell,
-                    { color: mode ? "white" : "black" , borderColor: mode ? "white" : "#ccc",},
+                    styles.tableRow,
+                    { backgroundColor: mode ? "rgba(0,0,0,0.7)" : "white" },
                   ]}
                 >
-                  Average Waiting Time:
-                </Text>
-                <Text
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      {
+                        color: mode ? "white" : "black",
+                        borderColor: mode ? "white" : "#ccc",
+                      },
+                    ]}
+                  >
+                    Average Waiting Time:
+                  </Text>
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      {
+                        color: mode ? "white" : "black",
+                        borderColor: mode ? "white" : "#ccc",
+                      },
+                    ]}
+                  >
+                    {tableData.avgWaitingTime.toFixed(2)}
+                  </Text>
+                </View>
+                <View
                   style={[
-                    styles.tableCell,
-                    { color: mode ? "white" : "black" , borderColor: mode ? "white" : "#ccc",},
+                    styles.tableRow,
+                    { backgroundColor: mode ? "rgba(0,0,0,0.7)" : "white" },
                   ]}
                 >
-                  {tableData.avgWaitingTime.toFixed(2)}
-                </Text>
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      {
+                        color: mode ? "white" : "black",
+                        borderColor: mode ? "white" : "#ccc",
+                      },
+                    ]}
+                  >
+                    Avg Turnaround Time:
+                  </Text>
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      {
+                        color: mode ? "white" : "black",
+                        borderColor: mode ? "white" : "#ccc",
+                      },
+                    ]}
+                  >
+                    {tableData.totalTurnaroundTime.toFixed(2)}
+                  </Text>
+                </View>
               </View>
-              <View
-                style={[
-                  styles.tableRow,
-                  { backgroundColor: mode ? "rgba(0,0,0,0.7)" : "white" },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.tableCell,
-                    { color: mode ? "white" : "black" , borderColor: mode ? "white" : "#ccc",},
-                  ]}
-                >
-                  Avg Turnaround Time:
-                </Text>
-                <Text
-                  style={[
-                    styles.tableCell,
-                    { color: mode ? "white" : "black", borderColor: mode ? "white" : "#ccc", },
-                  ]}
-                >
-                  {tableData.totalTurnaroundTime.toFixed(2)}
-                </Text>
-              </View>
-            </View>
-          </ScrollView>
-        )}
+            </ScrollView>
+          )}
 
-        <View
-          style={{
-            flexDirection: "row",
-            width: "100%",
-            justifyContent: "space-evenly",
-            marginBottom: height / 50,
-          }}
-        >
-          <TouchableOpacity
-            onPress={() => {
-              setVisible(true);
+          <View
+            style={{
+              flexDirection: "row",
+              width: "100%",
+              justifyContent: "space-evenly",
+              marginBottom: height / 50,
             }}
-            style={styles.algoButton}
           >
-            <LinearGradient
-              colors={["#ACA5D0", "#5140B3"]}
-              start={[0, 0]}
-              end={[1, 1]}
-              style={styles.gradient}
-            />
-            <Text
-              style={{
-                color: "white",
-                fontSize: width / 23,
-                fontWeight: "700",
-              }}
-            >
-              Select Algorithm
-            </Text>
-          </TouchableOpacity>
-
-          {show ? (
-            <ActivityIndicator
-              animating={show}
-              color={mode?'white' :'red'}
-              style={{
-                justifyContent: "center",
-                alignItems: "center",
-                width: width / 2.7,
-                borderRadius: width / 40,
-                height: height / 16,
-              }}
-            />
-          ) : (
             <TouchableOpacity
+              onPress={() => {
+                setVisible(true);
+              }}
               style={styles.algoButton}
-              onPress={calculateGanttData}
             >
               <LinearGradient
-                colors={["#ACA5D0", "#5140B3"]} // Define your gradient colors here
+                colors={["#ACA5D0", "#5140B3"]}
                 start={[0, 0]}
                 end={[1, 1]}
                 style={styles.gradient}
@@ -927,27 +1000,61 @@ const Main = () => {
                   fontWeight: "700",
                 }}
               >
-                Calculate
+                Select Algorithm
               </Text>
             </TouchableOpacity>
-          )}
-          <Alert
-            showmodal={showdownloadModal}
-            setshowmodal={setshowdownloadModal}
-            closemodal={false}
-            icon={"check-circle"}
-            text={"Image Saved to Gallery"}
-          />
-          <Alert
-            showmodal={showAlert}
-            setshowmodal={setshowAlert}
-            closemodal={false}
-            icon={"exclamation-triangle"}
-            text={"No Algorithm Selected!"}
-          />
+
+            {show ? (
+              <ActivityIndicator
+                animating={show}
+                color={mode ? "white" : "red"}
+                style={{
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: width / 2.7,
+                  borderRadius: width / 40,
+                  height: height / 16,
+                }}
+              />
+            ) : (
+              <TouchableOpacity
+                style={styles.algoButton}
+                onPress={calculateGanttData}
+              >
+                <LinearGradient
+                  colors={["#ACA5D0", "#5140B3"]} // Define your gradient colors here
+                  start={[0, 0]}
+                  end={[1, 1]}
+                  style={styles.gradient}
+                />
+                <Text
+                  style={{
+                    color: "white",
+                    fontSize: width / 23,
+                    fontWeight: "700",
+                  }}
+                >
+                  Calculate
+                </Text>
+              </TouchableOpacity>
+            )}
+            <Alert
+              showmodal={showdownloadModal}
+              setshowmodal={setshowdownloadModal}
+              closemodal={false}
+              icon={"check-circle"}
+              text={"Image Saved to Gallery"}
+            />
+            <Alert
+              showmodal={showAlert}
+              setshowmodal={setshowAlert}
+              closemodal={false}
+              icon={"exclamation-triangle"}
+              text={"No Algorithm Selected!"}
+            />
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
     </SafeAreaView>
   );
 };

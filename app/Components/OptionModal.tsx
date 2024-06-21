@@ -30,29 +30,52 @@ const OptionModal = ({ visible, onClose, onPress, onPresspdf }) => {
                 { backgroundColor: mode ? "rgba(128,128,128,1)" : "white" },
               ]}
             >
-              <TouchableOpacity style={styles.imageContainer} onPress={onPress}>
-                <FontAwesome
-                  name="file-image-o"
-                  size={width / 9.5}
-                  color={mode ? "rgba(255,255,0,1)" : "rgba(255,0,0,0.65)"}
-                />
-                <View style={styles.label}>
-                  <Text style={styles.text}>JPG</Text>
+              <View style={{ alignItems: "center", gap: width / 36 }}>
+                <TouchableOpacity
+                  style={[
+                    styles.imageContainer,
+                    { borderColor: mode ? "white" : "black" },
+                  ]}
+                  onPress={onPress}
+                >
+                  <FontAwesome
+                    name="file-image-o"
+                    size={width / 17}
+                    color={mode ? "rgba(255,255,0,1)" : "rgba(255,0,0,0.65)"}
+                  />
+                </TouchableOpacity>
+                <View>
+                  <Text
+                    style={[styles.text, { color: mode ? "white" : "black" }]}
+                  >
+                    JPG
+                  </Text>
                 </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.imageContainer}
-                onPress={onPresspdf}
-              >
-                <FontAwesome
-                  name="file-text"
-                  size={width / 9.5}
-                  color={mode ? "rgba(173, 216, 230, 1)" : "rgba(0,0,255,0.45)"}
-                />
-                <View style={styles.label}>
-                  <Text style={styles.text}>PDF</Text>
+              </View>
+              <View style={{ alignItems: "center", gap: width / 36 }}>
+                <TouchableOpacity
+                  style={[
+                    styles.imageContainer,
+                    { borderColor: mode ? "white" : "black" },
+                  ]}
+                  onPress={onPresspdf}
+                >
+                  <FontAwesome
+                    name="file-text"
+                    size={width / 17}
+                    color={
+                      mode ? "rgba(173, 216, 230, 1)" : "rgba(0,0,255,0.45)"
+                    }
+                  />
+                </TouchableOpacity>
+                <View>
+                  <Text
+                    style={[styles.text, { color: mode ? "white" : "black" }]}
+                  >
+                    PDF
+                  </Text>
                 </View>
-              </TouchableOpacity>
+              </View>
             </View>
           </TouchableWithoutFeedback>
         </View>
@@ -73,7 +96,7 @@ const styles = StyleSheet.create({
   container: {
     width: width,
     flexDirection: "row",
-    height: height / 8.8,
+    height: height / 6.8,
     borderTopEndRadius: height / 30,
     borderTopLeftRadius: height / 30,
     justifyContent: "space-around",
@@ -87,14 +110,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     flexDirection: "row",
+    borderWidth: 0.4,
+    borderRadius: 100,
   },
   imageStyle: {
     height: height / 8,
     width: height / 8,
   },
   text: {
-    color: "white",
-    fontSize: width / 40,
+    fontSize: width / 28,
     fontStyle: "italic",
   },
   label: {

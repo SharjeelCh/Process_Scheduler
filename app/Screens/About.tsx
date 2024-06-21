@@ -1,4 +1,3 @@
-// AboutMeScreen.js
 import React from "react";
 import {
   ScrollView,
@@ -12,7 +11,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Card } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
-import { width } from "../Components/Dimensions";
 import { router } from "expo-router";
 
 export default function About() {
