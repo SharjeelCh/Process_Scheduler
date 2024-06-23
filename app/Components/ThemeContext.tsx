@@ -14,7 +14,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const fetchThemeMode = async () => {
       const mode = await getThemeMode();
-      console.log('Initial theme mode:', mode);
+      
       setmode(mode);
     };
 
@@ -24,7 +24,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const toggleThemeMode = async () => {
     const newMode = !mode;
     setmode(newMode);
-    console.log('Toggling theme mode to:', newMode);
+    
     await saveThemeMode(newMode);
   };
 

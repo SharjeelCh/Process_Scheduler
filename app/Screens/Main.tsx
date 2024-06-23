@@ -42,6 +42,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const Main = () => {
   const router = useRouter();
 
+  let processesmlfq = [
+    { arrivalTime: 3, burstTime: 9, id: 1 },
+    { arrivalTime: 2, burstTime: 6, id: 2 },
+  ];
+
   const [visible, setVisible] = useState(false);
   const [downlaodModal, setdownloadModal] = useState(false);
   const [custom, setCustom] = useState(false);
@@ -67,6 +72,10 @@ const Main = () => {
     const file = await printToFileAsync({ html, base64: false });
     await shareAsync(file.uri);
   };
+  useEffect(() => {
+    console.log(processes);
+    console.log(algorithm)
+  }, [processes]);
 
   const toggleModalVisibility = () => {
     setdownloadModal(!downlaodModal);
@@ -155,7 +164,7 @@ const Main = () => {
       let endTime = ganttChart
         .filter((entry) => entry.id === process.id)
         .pop().endTime;
-      turnaroundTimes[process.id] = endTime
+      turnaroundTimes[process.id] = endTime;
     });
     return turnaroundTimes;
   };
@@ -428,6 +437,75 @@ const Main = () => {
     return ganttChart;
   };
 
+  const mlfqAlgorithm = (originalProcesses) => {
+    let currentTime = 0;
+    let ganttChart = [];
+    let queues = [
+      { timeQuantum: 2, processes: [] },
+      { timeQuantum: 4, processes: [] },
+      { timeQuantum: Infinity, processes: [] },
+    ];
+    let processes = deepCopyProcesses(originalProcesses);
+
+    processes.sort((a, b) => a.arrivalTime - b.arrivalTime);
+
+    while (
+      processes.length > 0 ||
+      queues.some((queue) => queue.processes.length > 0)
+    ) {
+      while (processes.length > 0 && processes[0].arrivalTime <= currentTime) {
+        queues[0].processes.push(processes.shift());
+      }
+
+      for (let i = 0; i < queues.length; i++) {
+        if (queues[i].processes.length > 0) {
+          let currentProcess = queues[i].processes.shift();
+          let runTime = Math.min(
+            currentProcess.burstTime,
+            queues[i].timeQuantum
+          );
+
+          ganttChart.push({
+            id: currentProcess.id,
+            startTime: currentTime,
+            endTime: currentTime + runTime,
+          });
+
+          currentProcess.burstTime -= runTime;
+          currentTime += runTime;
+
+          // Move new arriving processes to the first queue
+          while (
+            processes.length > 0 &&
+            processes[0].arrivalTime <= currentTime
+          ) {
+            queues[0].processes.push(processes.shift());
+          }
+
+          if (currentProcess.burstTime > 0) {
+            // If the process is not finished, demote it to the next queue
+            if (i + 1 < queues.length) {
+              queues[i + 1].processes.push(currentProcess);
+            } else {
+              queues[i].processes.push(currentProcess); // If it is in the last queue, stay in the same queue
+            }
+          }
+          break; // Move to the next time unit
+        }
+      }
+
+      // If no process is available, increment the time
+      if (
+        !queues.some((queue) => queue.processes.length > 0) &&
+        processes.length > 0
+      ) {
+        currentTime = processes[0].arrivalTime;
+      }
+    }
+
+    return ganttChart;
+  };
+
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const calculateGanttData = async () => {
@@ -450,6 +528,8 @@ const Main = () => {
         ganttChart = roundRobinWithPriorityAlgorithm(processes, timeQuantum);
       } else if (algorithm === "Shortest Remaining Time First") {
         ganttChart = srtfAlgorithm(processes);
+      } else if (algorithm === "MultiLevel Feedback Queue") {
+        ganttChart = mlfqAlgorithm(processesmlfq);
       }
 
       setGanttData(ganttChart);
@@ -911,6 +991,38 @@ const Main = () => {
                     </Text>
                   </View>
                 ))}
+                {timeQuantum && algorithm=="Round Robin" || algorithm=="Round Robin with Priority" ? (
+                  <View
+                    style={[
+                      styles.tableRow,
+                      { backgroundColor: mode ? "rgba(0,0,0,0.7)" : "white" },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.tableCell,
+                        {
+                          color: mode ? "white" : "black",
+                          borderColor: mode ? "white" : "#ccc",
+                        },
+                      ]}
+                    >
+                      Time Quantum:
+                    </Text>
+                    <Text
+                      style={[
+                        styles.tableCell,
+                        {
+                          color: mode ? "white" : "black",
+                          borderColor: mode ? "white" : "#ccc",
+                        },
+                      ]}
+                    >
+                      {timeQuantum}
+                    </Text>
+                  </View>
+                ) : null}
+
                 <View
                   style={[
                     styles.tableRow,
@@ -988,9 +1100,9 @@ const Main = () => {
               style={styles.algoButton}
             >
               <LinearGradient
-                colors={["#ACA5D0", "#5140B3"]}
+              colors={["#ff0066", "#E3A14F"]}
                 start={[0, 0]}
-                end={[1, 1]}
+                end={[0.75, 0.75]}
                 style={styles.gradient}
               />
               <Text
@@ -1022,8 +1134,8 @@ const Main = () => {
                 onPress={calculateGanttData}
               >
                 <LinearGradient
-                  colors={["#ACA5D0", "#5140B3"]} // Define your gradient colors here
-                  start={[0, 0]}
+                 colors={[ "#E3A14F","#ff0066"]}
+                  start={[0.25, 0.25]}
                   end={[1, 1]}
                   style={styles.gradient}
                 />

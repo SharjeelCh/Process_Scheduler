@@ -133,6 +133,9 @@ const SelectionModal = ({
         setlockti(false);
         handleCreateObjectRoundRobinSimple();
         setshowsrr(true);
+      } else if(value == "MultiLevel Feedback Queue"){
+        setlockti(false);
+        onClose
       }
     }
   };
@@ -989,6 +992,10 @@ const SelectionModal = ({
               value="Round Robin with Priority"
             />
             <Picker.Item label="Round Robin" value="Round Robin" />
+            <Picker.Item
+              label="MultiLevel Feedback Queue"
+              value="MultiLevel Feedback Queue"
+            />
           </Picker>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <RadioButton
@@ -1050,24 +1057,41 @@ const SelectionModal = ({
           <View
             style={{ flexDirection: "row", justifyContent: "space-evenly" }}
           >
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => {
-                handleNumofProcesses(textinput);
-              }}
-            >
-              <LinearGradient
-                colors={["#ff0066", "#E3A14F"]} // Define your gradient colors here
-                start={[0, 0]}
-                end={[1, 1]}
-                style={styles.gradient}
-              />
-              <Text style={styles.closeButtonText}>Done</Text>
-            </TouchableOpacity>
+            {textinput ? (
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => {
+                  handleNumofProcesses(textinput);
+                }}
+              >
+                <LinearGradient
+                  colors={["#ff0066", "#E3A14F"]}
+                  start={[0, 0]}
+                  end={[1, 1]}
+                  style={styles.gradient}
+                />
+                <Text style={styles.closeButtonText}>Done</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => {
+                  handleNumofProcesses(textinput);
+                }}
+              >
+                <LinearGradient
+                  colors={["#ff0066", "#E3A14F"]}
+                  start={[0, 0]}
+                  end={[1, 1]}
+                  style={styles.gradient}
+                />
+                <Text style={styles.closeButtonText}>Next</Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
               <LinearGradient
-                colors={["#ff0066", "#E3A14F"]} // Define your gradient colors here
+                colors={["#ff0066", "#E3A14F"]}
                 start={[0, 0]}
                 end={[1, 1]}
                 style={styles.gradient}

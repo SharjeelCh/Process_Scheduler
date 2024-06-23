@@ -114,7 +114,7 @@ export const Html = (
             <div class="ganttContainer">
                 ${ganttData
                   .map((process, index) => {
-                    const width = ((process.endTime - process.startTime) / totalDuration) * 50;
+                    const width = ((process.endTime - process.startTime) / totalDuration) * 60;
                     const backgroundColor =
                       process.id === "wait"
                         ? "#ccc"
